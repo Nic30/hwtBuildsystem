@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Wed Apr 27 13:22:30 2016" VIVADOVERSION="2015.2">
+
+  <SYSTEMINFO ARCH="zynq" DEVICE="7z020" NAME="test1" PACKAGE="clg484" SPEEDGRADE="-2"/>
+
+  <EXTERNALPORTS>
+    <PORT DIR="I" NAME="portIn" SIGIS="undef" SIGNAME="External_Ports_portIn">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="External_Ports" PORT="portOut"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="O" NAME="portOut" SIGIS="undef" SIGNAME="External_Ports_portIn">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="External_Ports" PORT="portIn"/>
+      </CONNECTIONS>
+    </PORT>
+  </EXTERNALPORTS>
+
+  <EXTERNALINTERFACES/>
+
+  <MODULES/>
+
+</EDKSYSTEM>

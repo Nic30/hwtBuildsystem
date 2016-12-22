@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<Runs Version="1" Minor="0">
+	<Run Id="synth_1" LaunchDir="/home/nic30/Documents/workspace/hw_synthesis/hw_synthesis_helpers/cli_toolkit/vivado/samples/tmp/SampleBdProjectxc7z020clg484-2/SampleBdProjectxc7z020clg484-2.runs/synth_1" FlowId="Vivado_Synthesis" FromStepId="vivado" ToStepId="vivado"/>
+	<Run Id="impl_1" LaunchDir="/home/nic30/Documents/workspace/hw_synthesis/hw_synthesis_helpers/cli_toolkit/vivado/samples/tmp/SampleBdProjectxc7z020clg484-2/SampleBdProjectxc7z020clg484-2.runs/impl_1" FlowId="Vivado_Implementation" FromStepId="init_design" ToStepId="route_design">
+		<Parent Id="synth_1"/>
+	</Run>
+</Runs>
+
