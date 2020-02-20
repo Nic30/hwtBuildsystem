@@ -6,3 +6,4 @@ buildsystem for for HWToolkit (fpga devel. tools), Vivado, Modelsim, Quartus etc
 
 * [midas](https://github.com/ucb-bar/midas)
 * [edalize](https://github.com/olofk/edalize)
+* [ruckus](https://github.com/slaclab/ruckus)
