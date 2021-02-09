@@ -1,5 +1,5 @@
 # hwtBuildsystem [deprecated]
-buildsystem for for HWToolkit (fpga devel. tools), Vivado, Modelsim, Quartus etc.
+buildsystem for for HWToolkit (hwt) (fpga devel. tools), Vivado, Modelsim, Quartus etc.
 
 
 # Similar software
@@ -9,4 +9,6 @@ buildsystem for for HWToolkit (fpga devel. tools), Vivado, Modelsim, Quartus etc
 * [IPBB](https://github.com/ipbus/ipbb)
 * [midas](https://github.com/ucb-bar/midas)
 * [ruckus](https://github.com/slaclab/ruckus)
-* [mflowgen](https://github.com/cornell-brg/mflowgen) - ASIC/FPGA Flow Generator 
+* [mflowgen](https://github.com/cornell-brg/mflowgen) - ASIC/FPGA Flow Generator
+* [Vivado-CI](https://github.com/Viq111/Vivado-CI)
+* [VivadoScripting](https://github.com/paulscherrerinstitute/VivadoScripting)
