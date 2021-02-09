@@ -1,47 +1,43 @@
-from hwtBuildsystem.vivado.partBuilder import XilinxPartBuilder
-from hwtBuildsystem.vivado.api import Project, Port, Net
 from hwtBuildsystem.vivado.controller import VivadoCntrl
-from hwtBuildsystem.vivado.samples.createBdProject import populateBd
+from hwtBuildsystem.vivado.examples.createBdProject import populateBd
+from hwtBuildsystem.vivado.partBuilder import XilinxPartBuilder
+from hwtBuildsystem.vivado.api.project import Project
 
-tmpDir = 'tmp/'
 
-
-def xdcForBd(bd, portMap):
-    for _, p in bd.ports.items():
-        yield from p.generateXDC(portMap)
-    
-
-def createSampleBdProject(part):
-    p = Project(tmpDir, "SampleBdProject"+part)
+def createSampleBdProject(tmpDir, part):
+    p = Project(tmpDir, "SampleBdProject" + part)
     if p._exists():
         p._remove()
-    
+
     yield from p.create()
     yield from p.setPart(part)
-    
+
     bd = p.boardDesign("test1")
     yield from bd.create()
     yield from populateBd(bd)
     yield from bd.mkWrapper()
     yield from bd.setAsTop()
-    
+
     yield from p.synth()
-    portMap = {"portin":  "A8",
+    portMap = {"portin": "A8",
                "portout": "A9"}
-    
+
     yield from p.addXDCs('pinConstr', xdcForBd(bd, portMap))
     yield from p.implemAll()
-    
-def processCommandsAndOpenGui(part):
+
+
+def processCommandsAndOpenGui(tmpDir, part):
     with VivadoCntrl(logComunication=True) as v:
-        v.process(createSampleBdProject(part))
+        v.process(createSampleBdProject(tmpDir, part))
         v.openGui()
 
+
 if __name__ == "__main__":
+    tmpDir = 'tmp/'
     pb = XilinxPartBuilder
     kintex = XilinxPartBuilder(pb.Family.kintex7, pb.Size._160t, pb.Package.ffg676, pb.Speedgrade._2).name()
     zynq = XilinxPartBuilder(pb.Family.zynq7000, pb.Size._020, pb.Package.clg484, pb.Speedgrade._2).name()
-    
-    #processCommandsAndOpenGui(kintex)
-    processCommandsAndOpenGui(zynq)
-    
+
+    # processCommandsAndOpenGui(kintex)
+    processCommandsAndOpenGui(tmpDir, zynq)
+
