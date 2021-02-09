@@ -12,7 +12,6 @@ setup(name='hwtBuildsystem',
       author_email='michal.o.socials@gmail.com',
       install_requires=[
         'hwt', # core library of HWToolkit
-        'Pillow', # altium scheme reader
       ],
       license='MIT',
       packages = find_packages(),
