@@ -27,6 +27,7 @@ class RecordTypes:
     DESIGNATOR = b"34"
     PARAMETER = b"41"
 
+
 class PinElectricalTypes:
     """Signal types for a pin"""
     INPUT = b"0"
@@ -38,14 +39,17 @@ class PinElectricalTypes:
     OPEN_EMITTER = b"6"
     POWER = b"7"
 
+
 class PowerObjectStyleTypes:
     """Symbols for remote connections to common rails"""
     ARROW = b"1"
     BAR = b"2"
     GND = b"4"
 
+
 class ParameterReadOnlyStateTypes:
     NAME = b"1"
+
 
 class SheetStyleTypes:
     """Preset sheet sizes"""

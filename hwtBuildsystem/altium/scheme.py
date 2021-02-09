@@ -1,9 +1,8 @@
-from PIL.OleFileIO import OleFileIO
-from io import SEEK_CUR
+wfrom io import SEEK_CUR
 import struct
-from warnings import warn
 
-from hwtBuildsystem.altium.schemeObjs import Record 
+from PIL.OleFileIO import OleFileIO
+from hwtBuildsystem.altium.schemeObjs import Record
 
 
 # may differs in python3
@@ -19,7 +18,7 @@ def readSchDoc(fileName):
         if not length:
             break
         (length,) = struct.unpack("<I", length)
-        
+
         properties = stream.read(length - 1)
         obj = Record()
         for property in properties.split(b"|"):
@@ -28,23 +27,23 @@ def readSchDoc(fileName):
                 # prefixed with a pipe "|",
                 # so ignore an empty property before the prefix
                 continue
-            
+
             (name, value) = property.split(b"=", 1)
             name = name.decode("utf-8")
-            
+
             # try:
             #    value = value.decode("utf-8")
             # except UnicodeDecodeError:
             #    warn("value %s can not be converted to utf-8" % (str(value)))
-            
+
             obj.setProp(name, value)
 
-        
+
         yield  obj
-        
+
         # Skip over null terminator byte
         stream.seek(+1, SEEK_CUR)
-    
+
 
 
 if __name__ == "__main__":
