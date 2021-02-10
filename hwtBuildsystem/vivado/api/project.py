@@ -5,6 +5,7 @@ from typing import Optional
 from hwtBuildsystem.vivado.api import Language, FILE_TYPE
 from hwtBuildsystem.vivado.api.boardDesign import BoardDesign
 from hwtBuildsystem.vivado.tcl import VivadoTCL
+import xml.etree.ElementTree as ET
 
 
 class Project():
@@ -59,9 +60,9 @@ class Project():
         for s in self.listSynthesis():
             yield from self.run(s)
 
-    def synth(self):
-        assert(self.top is not None)
-        yield VivadoTCL.synth_design(self.top, self.part)
+    # def synth(self, quiet=False):
+    #    assert(self.top is not None)
+    #    yield VivadoTCL.synth_design(self.top, self.part)
 
     def implemAll(self):
         for s in self.listIpmplementations():
@@ -70,27 +71,35 @@ class Project():
     def writeBitstream(self):
         yield from self.run("impl_1", to_step="write_bitstream")  # impl_1 -to_step write_bitstream -jobs 8
 
+    def listRuns(self):
+        tree = ET.parse(self.projFile)
+        root = tree.getroot()
+        for runs in root:
+            if runs.tag != "Runs":
+                continue
+            for run in runs:
+                assert run.tag == "Run"
+                yield run
+
     def listSynthesis(self):
-        # [TODO] not ideal
-        for p in filter(lambda d: d.startswith('synth'),
-                        os.listdir(os.path.join(self.path, self.name + ".runs"))):
-            yield p
+        for r in self.listRuns():
+            if "Synth" in r.attrib["Type"]:
+                yield r.attrib["Id"]
 
     def listIpmplementations(self):
-        # [TODO] not ideal
-        try:
-            for p in filter(lambda d: d.startswith('impl'),
-                            os.listdir(os.path.join(self.path, self.name + ".runs"))):
-                yield p
-        except FileNotFoundError:
-            yield 'impl_1'  # project was not created yet
+        for r in self.listRuns():
+            if "EntireDesign" in r.attrib["Type"]:
+                yield r.attrib["Id"]
 
     def listFileGroups(self):
-        try:
-            for p in filter(os.path.isdir, os.listdir(self.srcDir)):
-                yield os.path.basename(p)
-        except FileNotFoundError:
-            yield from ["sources_1", "constrs_1", "sim_1"]
+        tree = ET.parse(self.projFile)
+        root = tree.getroot()
+        for fss in root:
+            if fss.tag != "FileSets":
+                continue
+            for fs in fss:
+                assert fs.tag == "FileSet"
+                yield fs.attrib["name"]
 
     def setPart(self, partName):
         self.part = partName

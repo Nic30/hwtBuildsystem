@@ -3,6 +3,7 @@
 
 from hwtBuildsystem.ioConstraints import set_IoPin, set_IoStandard
 from hwtBuildsystem.shortcuts import buildUnit
+from hwtBuildsystem.vivado.logParser.synthesis import getLutFfLatchBramUramDsp
 from hwtBuildsystem.vivado.xdcGen import IoStandard
 from hwtLib.examples.simpleAxiStream import SimpleUnitAxiStream
 
@@ -40,9 +41,13 @@ class SimpleUnitAxiStreamTop(SimpleUnitAxiStream):
 if __name__ == "__main__":
 
     u = SimpleUnitAxiStreamTop()
-    r = buildUnit(u, "tmp", log=True,
-                  implement=False,
-                  writeBitstream=False
+    r = buildUnit(u, "tmp", log=False,
+                  synthesize=True,
+                  implement=True,
+                  writeBitstream=True,
+                  # openGui=True,
                   )
+    sr = r.parseUtilizationSynth()
+    print(getLutFfLatchBramUramDsp(sr))
     print("Bitstream is in file %s" % (r.bitstreamFile))
 

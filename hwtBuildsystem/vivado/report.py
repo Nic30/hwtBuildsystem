@@ -1,3 +1,6 @@
+from hwtBuildsystem.vivado.logParser.synthesis import VivadoSynthesisLogParser
+
+
 class VivadoReport():
     """
     This class is output from hardware synthesis made by vivado
@@ -19,3 +22,10 @@ class VivadoReport():
 
         # synth
         self.utilizationSynth = None
+
+    def parseUtilizationSynth(self):
+        with open(self.utilizationSynth) as f:
+            d = f.read()
+        r = VivadoSynthesisLogParser(d)
+        r.parse()
+        return r

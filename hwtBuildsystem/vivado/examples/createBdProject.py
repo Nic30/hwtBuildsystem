@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwtBuildsystem.vivado.controller import VivadoCntrl
 from hwtBuildsystem.vivado.partBuilder import XilinxPartBuilder
 from ipCorePackager.constants import DIRECTION

@@ -59,7 +59,7 @@ def buildUnit(unit: Unit, root:str,
                 yield from p.addXdcFile(xdc)
 
         if synthesize:
-            yield from p.synth()
+            yield from p.synthAll()
             # collect report files
             r.utilizationSynth = os.path.join(
                 p.path, p.name + ".runs",

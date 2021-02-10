@@ -249,8 +249,12 @@ class VivadoTCL(VivadoFSOpsTCL, VivadoBDOpsTCL, VivadoProjectOpsTCL, VivadoHdlOp
         return " ".join(cmd)
 
     @staticmethod
-    def synth_design(top: str, part: str):
-        return f"synth_design -top {top:s} -part {part:s} -quiet"
+    def synth_design(top: str, part: str, quiet=False):
+        if quiet:
+            params = " -quiet"
+        else:
+            params = ""
+        return f"synth_design -top {top:s} -part {part:s}{params:s}"
 
     class group():
 
