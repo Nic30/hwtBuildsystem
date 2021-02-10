@@ -4,6 +4,7 @@ import os
 from hwtBuildsystem.vivado.cmdResult import VivadoCmdResult
 from hwtBuildsystem.vivado.config import VivadoConfig
 from hwtBuildsystem.vivado.tcl import VivadoTCL
+from typing import Optional
 
 
 def mkPackageIp(verdor, user, name, version):
@@ -14,11 +15,13 @@ class VivadoCntrl():
 
     def __init__(self, execFile=VivadoConfig.getExec(),
                  timeout=6 * 60 * 60,
+                 jurnalFile:Optional[str]=None,
+                 logFile:Optional[str]=None,
                  logComunication=False):
         self.execFile = execFile
         self.proc = None
-        self.jurnalFile = "vivado.jou"
-        self.logFile = 'vivado.log'
+        self.jurnalFile = jurnalFile
+        self.logFile = logFile
         self.verbose = True
         self.timeout = timeout
         self.guiOpened = False
@@ -29,9 +32,15 @@ class VivadoCntrl():
         cmd = ["-mode", 'tcl' , "-notrace"]
         if self.verbose:
             cmd.append('-verbose')
-        if self.jurnalFile is not None:
+
+        if self.jurnalFile is None:
+            cmd.append("-nojournal")
+        else:
             cmd.append(f"-journal {self.jurnalFile:s}")
-        if self.logFile is not None:
+
+        if self.logFile is None:
+            cmd.append("-nolog")
+        else:
             cmd.append(f"-log {self.logFile:s}")
 
         self.proc = pexpect.spawn(self.execFile, cmd)
