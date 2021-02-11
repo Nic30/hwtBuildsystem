@@ -92,16 +92,19 @@ class Project():
                 yield r.attrib["Id"]
 
     def listFileGroups(self):
-        tree = ET.parse(self.projFile)
+        try:
+            tree = ET.parse(self.projFile)
+        except FileNotFoundError:
+            return
         root = tree.getroot()
         for fss in root:
             if fss.tag != "FileSets":
                 continue
             for fs in fss:
                 assert fs.tag == "FileSet"
-                yield fs.attrib["name"]
+                yield fs.attrib["Name"]
 
-    def setPart(self, partName):
+    def setPart(self, partName: str):
         self.part = partName
         yield VivadoTCL.set_property(self.get(), "part", partName)
 
@@ -133,12 +136,11 @@ class Project():
 
     def addXDCs(self, name, XDCs):
         filename = os.path.join(self.srcDir, name + '.xdc')
-
         os.makedirs(os.path.dirname(filename), exist_ok=True)
-
         with open(filename, "w") as f:
             f.write('\n'.join(map(lambda xdc: xdc.asTcl(), XDCs)))
-        yield self.addXdcFile(filename)
+
+        yield from self.addXdcFile(filename)
 
     def setTargetLangue(self, lang):
         assert(lang == Language.verilog or lang == Language.vhdl)

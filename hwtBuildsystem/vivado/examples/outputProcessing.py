@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwtBuildsystem.vivado.controller import VivadoCntrl
-from hwtBuildsystem.vivado.cmdResult import VivadoErr
+from hwtBuildsystem.common.cmdResult import TclToolErr
 
 if __name__ == "__main__":
     with VivadoCntrl() as v:
@@ -19,5 +19,5 @@ if __name__ == "__main__":
         # try invalid cmd
         try:
             v.process(['dafsadfa'])
-        except VivadoErr as e:
+        except TclToolErr as e:
             print(e)

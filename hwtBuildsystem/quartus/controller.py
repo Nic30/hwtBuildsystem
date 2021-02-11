@@ -1,44 +1,24 @@
 import os
 import pexpect
-from typing import Optional
 
+from hwtBuildsystem.quartus.config import QuartusConfig
+from hwtBuildsystem.quartus.tcl import QuartusTCL
 from hwtBuildsystem.common.cmdResult import TclCmdResult
-from hwtBuildsystem.vivado.config import VivadoConfig
-from hwtBuildsystem.vivado.tcl import VivadoTCL
 
 
-class VivadoCntrl():
+class QuartusCntrl():
 
-    def __init__(self, execFile=VivadoConfig.getExec(),
+    def __init__(self, execFile=QuartusConfig.getExec(),
                  timeout=6 * 60 * 60,
-                 jurnalFile:Optional[str]=None,
-                 logFile:Optional[str]=None,
                  logComunication=False):
         self.execFile = execFile
         self.proc = None
-        self.jurnalFile = jurnalFile
-        self.logFile = logFile
-        self.verbose = True
         self.timeout = timeout
-        self.guiOpened = False
         self.logComunication = logComunication
         self.encoding = 'ASCII'
 
     def __enter__(self):
-        cmd = ["-mode", 'tcl' , "-notrace"]
-        if self.verbose:
-            cmd.append('-verbose')
-
-        if self.jurnalFile is None:
-            cmd.append("-nojournal")
-        else:
-            cmd.append(f"-journal {self.jurnalFile:s}")
-
-        if self.logFile is None:
-            cmd.append("-nolog")
-        else:
-            cmd.append(f"-log {self.logFile:s}")
-
+        cmd = ["-s"]
         self.proc = pexpect.spawn(self.execFile, cmd)
         self.firstCmd = True
         return self
@@ -46,37 +26,25 @@ class VivadoCntrl():
     def __exit__(self, exc_type, exc_val, exc_tb):
         p = self.proc
         if p.isalive():
-            p.sendline(VivadoTCL.exit())
+            p.sendline(QuartusTCL.exit())
             p.expect("exit", timeout=self.timeout)  # block while cmd ends
 
         if p.isalive():
             p.terminate()
 
-    def openGui(self):
-        """
-        @attention: this method disconnects controller and opens gui
-        """
-        list(self.process([VivadoTCL.start_gui()]))  # list to execute because process() is  generator
-        if self.proc.isalive():
-            self.proc.wait()
-
     def _process(self, cmds):
         p = self.proc
         for cmd in cmds:
             if self.firstCmd:
-                p.expect("Vivado%", timeout=self.timeout)  # block while command line init
+                p.expect("tcl>", timeout=self.timeout)  # block while command line init
                 self.firstCmd = False
-            if self.guiOpened:
-                raise Exception("Controller have no acces to Vivado because gui is opened")
 
             p.sendline(cmd)
             # @attention: there is timing issue in reading from tty next command returns corrupted line
             p.readline()  # read cmd from tty
             # p.expect(cmd, timeout=self.timeout)
-            if cmd == VivadoTCL.start_gui():
-                self.guiOpened = True
             try:
-                p.expect("Vivado%", timeout=self.timeout)  # block while cmd ends
+                p.expect("tcl>", timeout=self.timeout)  # block while cmd ends
             except pexpect.EOF:
                 pass
             t = p.before.decode(self.encoding)
@@ -107,15 +75,9 @@ class VivadoCntrl():
 
 
 if __name__ == "__main__":
-    with VivadoCntrl() as v:
-        _op, _pwd, _dir = v.process(['open_project examples/tmp/SimpleUnitAxiStream/SimpleUnitAxiStream.xpr', 'pwd', 'dir'])
+    with QuartusCntrl(logComunication=True) as q:
+        _op, _pwd = q.process(['help', 'pwd', "xyz"])
         print(_op.resultText)
-        ls = os.listdir(_pwd.resultText)
-        vivadoLs = _dir.resultText.split()
-        ls.sort()
-        vivadoLs.sort()
-        print(ls)
-        print(vivadoLs)
-        v.openGui()
+        print(_pwd.resultText)
 
     print('finished')

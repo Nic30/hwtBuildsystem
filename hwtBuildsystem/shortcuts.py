@@ -7,7 +7,6 @@ from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import to_rtl
 from hwtBuildsystem.vivado.api import FILE_TYPE
 from hwtBuildsystem.vivado.api.project import Project
-from hwtBuildsystem.vivado.config import VivadoConfig
 from hwtBuildsystem.vivado.controller import VivadoCntrl
 from hwtBuildsystem.vivado.partBuilder import XilinxPartBuilder
 from hwtBuildsystem.vivado.report import VivadoReport
@@ -27,12 +26,12 @@ def buildUnit(unit: Unit, root:str,
     """
     Synthetize unit in bitstream synthesis tool
     """
-    r = VivadoReport()
     uName = unit._getDefaultName()
+    p = Project(root, uName, workerCnt)
+    r = VivadoReport(p.path, p.name, uName)
 
-    def synthesizeCmds(workerCnt):
+    def synthesizeCmds():
         # generate project
-        p = Project(root, uName, workerCnt)
         if p._exists():
             p._remove()
         yield from p.create()
@@ -60,32 +59,18 @@ def buildUnit(unit: Unit, root:str,
 
         if synthesize:
             yield from p.synthAll()
-            # collect report files
-            r.utilizationSynth = os.path.join(
-                p.path, p.name + ".runs",
-                "synth_1", uName + "_utilization_synth.rpt")
+            r.setSynthFileNames()
 
         if implement:
-            impl = os.path.join(p.path, p.name + ".runs", "impl_1")
-            implP = lambda n: os.path.join(impl, uName + "_" + n + ".rpt")
             yield from p.implemAll()
-            # collect report files
-            r.dcrOpted = implP("drc_opted")
-            r.ioPlaced = implP("io_placed")
-            r.dcrRouted = implP("drc_routed")
-            r.powerRouted = implP("power_routed")
-            r.routeStatus = implP("route_status")
-            r.utilizationPlaced = implP("utilization_placed")
-            r.controlSetsPlaced = implP("control_sets_placed")
-            r.timingSummaryRouted = implP("timing_summary_routed")
-            r.clokUtilizationRouted = implP("clock_utilization_routed")
+            r.setImplFileNames()
 
         if writeBitstream:
             yield from p.writeBitstream()
-            r.bitstreamFile = os.path.join(impl, unit._name + ".bit")
+            r.setBitstreamFileName()
 
-    with VivadoCntrl(VivadoConfig.getExec(), logComunication=log) as v:
-        v.process(synthesizeCmds(workerCnt))
+    with VivadoCntrl(logComunication=log) as v:
+        v.process(synthesizeCmds())
         if openGui:
             v.openGui()
 

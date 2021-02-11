@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from ipCorePackager.constants import DIRECTION
+from hwtBuildsystem.common.tcl import CommonTcl
 
 
 # http://www.xilinx.com/support/documentation/sw_manuals/xilinx2013_1/ug975-vivado-quick-reference.pdf
@@ -222,7 +223,7 @@ class VivadoHdlOps():
         return "get_ports %s" % (" ".join(portNames))
 
 
-class VivadoTCL(VivadoFSOpsTCL, VivadoBDOpsTCL, VivadoProjectOpsTCL, VivadoHdlOps):
+class VivadoTCL(CommonTcl, VivadoFSOpsTCL, VivadoBDOpsTCL, VivadoProjectOpsTCL, VivadoHdlOps):
     """
     python wraps for Vivado TCL commands
     """
@@ -265,10 +266,6 @@ class VivadoTCL(VivadoFSOpsTCL, VivadoBDOpsTCL, VivadoProjectOpsTCL, VivadoHdlOp
         @staticmethod
         def end():
             return 'endgroup'
-
-    @staticmethod
-    def exit():
-        return "exit"
 
     @staticmethod
     def start_gui():

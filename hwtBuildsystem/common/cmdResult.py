@@ -1,17 +1,17 @@
 import re
 
 
-class VivadoErr(Exception):
+class TclToolErr(Exception):
 
     def __init__(self, cmdResult):
-        super(VivadoErr, self).__init__()
+        super(TclToolErr, self).__init__()
         self.cmdResult = cmdResult
 
     def __str__(self):
         return 'Cmd "%s" caused errors:\n%s' % (self.cmdResult.cmd, str(self.cmdResult.errors))
 
 
-class VivadoCmdResult():
+class TclCmdResult():
     """
     Parsed result of comand over cli
     """
@@ -43,14 +43,14 @@ class VivadoCmdResult():
         warnings = []
         infos = []
 
-        resultText = VivadoCmdResult.extractMsgs(resultText, VivadoCmdResult.regex_invalidCmd, errors)
-        resultText = VivadoCmdResult.extractMsgs(resultText, VivadoCmdResult.regex_err, errors)
-        resultText = VivadoCmdResult.extractMsgs(resultText, VivadoCmdResult.regex_critWarn, criticalWarnings)
-        resultText = VivadoCmdResult.extractMsgs(resultText, VivadoCmdResult.regex_warn, warnings)
-        resultText = VivadoCmdResult.extractMsgs(resultText, VivadoCmdResult.regex_info, infos)
+        resultText = TclCmdResult.extractMsgs(resultText, TclCmdResult.regex_invalidCmd, errors)
+        resultText = TclCmdResult.extractMsgs(resultText, TclCmdResult.regex_err, errors)
+        resultText = TclCmdResult.extractMsgs(resultText, TclCmdResult.regex_critWarn, criticalWarnings)
+        resultText = TclCmdResult.extractMsgs(resultText, TclCmdResult.regex_warn, warnings)
+        resultText = TclCmdResult.extractMsgs(resultText, TclCmdResult.regex_info, infos)
 
         return cls(cmd, resultText.strip(), errors, criticalWarnings, warnings, infos)
 
     def raiseOnErrors(self):
         if self.errors:
-            raise VivadoErr(self)
+            raise TclToolErr(self)

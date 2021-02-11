@@ -7,11 +7,7 @@ from hwtBuildsystem.vivado.partBuilder import XilinxPartBuilder
 from hwtBuildsystem.vivado.api.project import Project
 
 
-def createSampleBdProject(tmpDir: str):
-    pb = XilinxPartBuilder
-    part = XilinxPartBuilder(pb.Family.kintex7, pb.Size._160t,
-                             pb.Package.ffg676, pb.Speedgrade._2).name()
-
+def createSampleBdProject(tmpDir: str, part):
     p = Project(tmpDir, "SampleBdProject")
     if p._exists():
         p._remove()
@@ -25,7 +21,7 @@ def createSampleBdProject(tmpDir: str):
     yield from bd.mkWrapper()
     yield from bd.setAsTop()
 
-    yield from p.synth()
+    yield from p.synthAll()
 
 
 def processCommandsAndOpenGui(tmpDir: str):
@@ -36,4 +32,7 @@ def processCommandsAndOpenGui(tmpDir: str):
 
 if __name__ == "__main__":
     tmpDir = "tmp"
-    processCommandsAndOpenGui(tmpDir)
+    pb = XilinxPartBuilder
+    part = XilinxPartBuilder(pb.Family.kintex7, pb.Size._160t,
+                             pb.Package.ffg676, pb.Speedgrade._2).name()
+    processCommandsAndOpenGui(tmpDir, part)

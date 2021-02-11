@@ -40,7 +40,7 @@ class SimpleUnitAxiStreamTop(SimpleUnitAxiStream):
 
 if __name__ == "__main__":
     u = SimpleUnitAxiStreamTop()
-    r = buildUnit(u, "tmp", log=False,
+    r = buildUnit(u, "tmp", log=True,
                   synthesize=True,
                   implement=True,
                   writeBitstream=True,
