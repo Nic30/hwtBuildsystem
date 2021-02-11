@@ -1,19 +1,23 @@
+import multiprocessing
 import os
 import pexpect
 from typing import Optional
 
 from hwtBuildsystem.common.cmdResult import TclCmdResult
+from hwtBuildsystem.common.executor import ToolExecutor
+from hwtBuildsystem.vivado.api.project import VivadoProject
 from hwtBuildsystem.vivado.config import VivadoConfig
 from hwtBuildsystem.vivado.tcl import VivadoTCL
 
 
-class VivadoCntrl():
+class VivadoExecutor(ToolExecutor):
 
     def __init__(self, execFile=VivadoConfig.getExec(),
                  timeout=6 * 60 * 60,
                  jurnalFile:Optional[str]=None,
                  logFile:Optional[str]=None,
-                 logComunication=False):
+                 logComunication=False,
+                 workerCnt=multiprocessing.cpu_count()):
         self.execFile = execFile
         self.proc = None
         self.jurnalFile = jurnalFile
@@ -23,6 +27,7 @@ class VivadoCntrl():
         self.guiOpened = False
         self.logComunication = logComunication
         self.encoding = 'ASCII'
+        self.workerCnt = workerCnt
 
     def __enter__(self):
         cmd = ["-mode", 'tcl' , "-notrace"]
@@ -60,44 +65,34 @@ class VivadoCntrl():
         if self.proc.isalive():
             self.proc.wait()
 
-    def _process(self, cmds):
+    def _process(self, cmd: str):
         p = self.proc
-        for cmd in cmds:
-            if self.firstCmd:
-                p.expect("Vivado%", timeout=self.timeout)  # block while command line init
-                self.firstCmd = False
-            if self.guiOpened:
-                raise Exception("Controller have no acces to Vivado because gui is opened")
+        if self.firstCmd:
+            p.expect("Vivado%", timeout=self.timeout)  # block while command line init
+            self.firstCmd = False
+        if self.guiOpened:
+            raise Exception("Controller have no acces to Vivado because gui is opened")
 
-            p.sendline(cmd)
-            # @attention: there is timing issue in reading from tty next command returns corrupted line
-            p.readline()  # read cmd from tty
-            # p.expect(cmd, timeout=self.timeout)
-            if cmd == VivadoTCL.start_gui():
-                self.guiOpened = True
-            try:
-                p.expect("Vivado%", timeout=self.timeout)  # block while cmd ends
-            except pexpect.EOF:
-                pass
-            t = p.before.decode(self.encoding)
-            if self.logComunication:
-                print(cmd)
-                print(t)
-            res = TclCmdResult.fromStdoutStr(cmd, t)
-            res.raiseOnErrors()
-            yield res
+        p.sendline(cmd)
+        # :attention: there is timing issue in reading from tty next command returns corrupted line
+        p.readline()  # read cmd from tty
+        # p.expect(cmd, timeout=self.timeout)
+        if cmd == VivadoTCL.start_gui():
+            self.guiOpened = True
+        try:
+            p.expect("Vivado%", timeout=self.timeout)  # block while cmd ends
+        except pexpect.EOF:
+            pass
+        t = p.before.decode(self.encoding)
+        if self.logComunication:
+            print(cmd)
+            print(t)
+        res = TclCmdResult.fromStdoutStr(cmd, t)
+        res.raiseOnErrors()
+        return res
 
-    def process(self, cmds, iterator=False):
-        """
-        @attention: if iterator == True you must iterate trough it to execute commands,
-                    this is how python generator works
-        @param iterator: return iterator over cmd results
-        """
-        results = self._process(cmds)
-        if iterator:
-            return results
-        else:
-            return list(results)
+    def project(self, root, name):
+        return VivadoProject(self, root, name)
 
     def rmLogs(self):
         if os.path.exists(self.logFile):
@@ -107,7 +102,7 @@ class VivadoCntrl():
 
 
 if __name__ == "__main__":
-    with VivadoCntrl() as v:
+    with VivadoExecutor() as v:
         _op, _pwd, _dir = v.process(['open_project examples/tmp/SimpleUnitAxiStream/SimpleUnitAxiStream.xpr', 'pwd', 'dir'])
         print(_op.resultText)
         ls = os.listdir(_pwd.resultText)

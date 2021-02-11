@@ -4,17 +4,19 @@ from typing import Optional
 
 from hwtBuildsystem.vivado.api import Language, FILE_TYPE
 from hwtBuildsystem.vivado.api.boardDesign import BoardDesign
+from hwtBuildsystem.vivado.report import VivadoReport
 from hwtBuildsystem.vivado.tcl import VivadoTCL
 import xml.etree.ElementTree as ET
 
 
-class Project():
+class VivadoProject():
 
-    def __init__(self, path, name, workerCnt=None):
+    def __init__(self, executor: "VivadoExecutor", path, name):
         """
         @param path: path is path of directory where project is stored
         @name name: name of project folder and project *.xpr/ppr file
         """
+        self.executor = executor
         self.name = name
         j = os.path.join
         self.path = j(path, name)
@@ -24,13 +26,13 @@ class Project():
         self.constrFileSet_name = 'constrs_1'
         self.part = None
         self.top = None
-        self.workerCnt = workerCnt
+        self._report = VivadoReport(self.path, self.name, None)
 
     def create(self, in_memory=False):
         yield VivadoTCL.create_project(self.path, self.name, in_memory=in_memory)
         yield from self.setTargetLangue(Language.vhdl)
-        if self.workerCnt is not None:
-            yield f"set_param general.maxThreads {self.workerCnt:d}"
+        if self.executor.workerCnt is not None:
+            yield f"set_param general.maxThreads {self.executor.workerCnt:d}"
 
     def setFileType(self, fileName: str, fileType:FILE_TYPE):
         """
@@ -53,12 +55,13 @@ class Project():
 
     def run(self, jobName: str, to_step:Optional[str]=None):
         yield VivadoTCL.reset_run(jobName)
-        yield VivadoTCL.launch_runs([jobName], workerCnt=self.workerCnt, to_step=to_step)
+        yield VivadoTCL.launch_runs([jobName], workerCnt=self.executor.workerCnt, to_step=to_step)
         yield VivadoTCL.wait_on_run(jobName)
 
     def synthAll(self):
         for s in self.listSynthesis():
             yield from self.run(s)
+        self._report.setSynthFileNames()
 
     # def synth(self, quiet=False):
     #    assert(self.top is not None)
@@ -67,9 +70,11 @@ class Project():
     def implemAll(self):
         for s in self.listIpmplementations():
             yield from self.run(s)
+        self._report.setImplFileNames()
 
     def writeBitstream(self):
         yield from self.run("impl_1", to_step="write_bitstream")  # impl_1 -to_step write_bitstream -jobs 8
+        self._report.setBitstreamFileName()
 
     def listRuns(self):
         tree = ET.parse(self.projFile)
@@ -92,10 +97,7 @@ class Project():
                 yield r.attrib["Id"]
 
     def listFileGroups(self):
-        try:
-            tree = ET.parse(self.projFile)
-        except FileNotFoundError:
-            return
+        tree = ET.parse(self.projFile)
         root = tree.getroot()
         for fss in root:
             if fss.tag != "FileSets":
@@ -125,9 +127,10 @@ class Project():
         yield VivadoTCL.add_files(files)
         yield VivadoTCL.update_compile_order("sources_1")
 
-    def setTop(self, topEntName):
-        self.top = topEntName
-        yield VivadoTCL.set_property("[current_fileset]", 'top', topEntName)
+    def setTop(self, topName):
+        self.top = topName
+        self._report.topName = topName
+        yield VivadoTCL.set_property("[current_fileset]", 'top', topName)
 
     def addXdcFile(self, filename: str):
         yield VivadoTCL.add_files([filename],
@@ -145,4 +148,7 @@ class Project():
     def setTargetLangue(self, lang):
         assert(lang == Language.verilog or lang == Language.vhdl)
         yield VivadoTCL.set_property(self.get(), "target_language", lang)
+
+    def report(self):
+        return self._report
 

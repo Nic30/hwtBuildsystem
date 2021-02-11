@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwtBuildsystem.vivado.controller import VivadoCntrl
+from hwtBuildsystem.vivado.executor import VivadoExecutor
 from hwtBuildsystem.vivado.partBuilder import XilinxPartBuilder
 from ipCorePackager.constants import DIRECTION
 from hwtBuildsystem.vivado.api.boardDesign import BoardDesign
 from hwtBuildsystem.vivado.api.port import Port
 from hwtBuildsystem.vivado.api.net import Net
-from hwtBuildsystem.vivado.api.project import Project
 
 
 def populateBd(bd: BoardDesign):
@@ -20,11 +19,11 @@ def populateBd(bd: BoardDesign):
     yield from Net.createMultipleFromDict({p_out: p_in})
 
 
-def createSampleBdProject(tmpDir):
+def createSampleBdProject(v: VivadoExecutor, tmpDir):
     pb = XilinxPartBuilder
     part = XilinxPartBuilder(pb.Family.kintex7, pb.Size._160t, pb.Package.ffg676, pb.Speedgrade._2).name()
 
-    p = Project(tmpDir, "SampleBdProject")
+    p = v.project(tmpDir, "SampleBdProject")
     if p._exists():
         p._remove()
 
@@ -43,17 +42,6 @@ def showCommands(tmpDir: str):
         print(cmd)
 
 
-def processCommandsWithOpenedLogger(tmpDir: str):
-    with VivadoCntrl(logComunication=True) as v:
-        v.process(createSampleBdProject(tmpDir))
-
-
-def processCommandsAndOpenGui(tmpDir: str):
-    with VivadoCntrl(logComunication=True) as v:
-        v.process(createSampleBdProject(tmpDir))
-        v.openGui()
-
-
 if __name__ == "__main__":
     tmpDir = 'tmp/'
 
@@ -61,7 +49,10 @@ if __name__ == "__main__":
     showCommands(tmpDir)
 
     print("#processCommandsWithOpenedLogger")
-    processCommandsWithOpenedLogger(tmpDir)
+    with VivadoExecutor(logComunication=True) as v:
+        v.process(createSampleBdProject(v, tmpDir))
 
     print("processCommandsAndOpenGui")
-    processCommandsAndOpenGui(tmpDir)
+    with VivadoExecutor(logComunication=True) as v:
+        v.process(createSampleBdProject(v, tmpDir))
+        v.openGui()

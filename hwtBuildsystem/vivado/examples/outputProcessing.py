@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwtBuildsystem.vivado.controller import VivadoCntrl
+from hwtBuildsystem.vivado.executor import VivadoExecutor
 from hwtBuildsystem.common.cmdResult import TclToolErr
 
 if __name__ == "__main__":
-    with VivadoCntrl() as v:
+    with VivadoExecutor() as v:
         # process and show result
         for cmdRes in  v.process(['dir', 'pwd'], iterator=True):
             print(cmdRes.resultText)

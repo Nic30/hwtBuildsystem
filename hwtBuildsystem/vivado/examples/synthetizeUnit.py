@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwtBuildsystem.ioConstraints import set_IoPin, set_IoStandard
-from hwtBuildsystem.shortcuts import buildUnit
 from hwtBuildsystem.vivado.logParser.synthesis import getLutFfLatchBramUramDsp
+from hwtBuildsystem.vivado.shortcuts import buildUnit
 from hwtBuildsystem.vivado.xdcGen import IoStandard
 from hwtLib.examples.simpleAxiStream import SimpleUnitAxiStream
 
@@ -39,13 +39,25 @@ class SimpleUnitAxiStreamTop(SimpleUnitAxiStream):
 
 
 if __name__ == "__main__":
+    #from hwtBuildsystem.vivado.executor import VivadoExecutor
+    #from hwtBuildsystem.fakeTool.recordingExecutor import RecordingExecutor
+    from hwtBuildsystem.fakeTool.replayingExecutor import ReplayingExecutor
+
     u = SimpleUnitAxiStreamTop()
-    r = buildUnit(u, "tmp", log=True,
-                  synthesize=True,
-                  implement=True,
-                  writeBitstream=True,
-                  # openGui=True,
-                  )
+    # with VivadoExecutor(logComunication=True) as v:
+    #with RecordingExecutor(
+    #  VivadoExecutor(logComunication=True, workerCnt=1),
+    #  ['tmp/SimpleUnitAxiStreamTop/SimpleUnitAxiStreamTop.xpr',
+    #   'tmp/SimpleUnitAxiStreamTop/SimpleUnitAxiStreamTop.runs/synth_1/SimpleUnitAxiStreamTop_utilization_synth.rpt'],
+    #  "../../../tests/SimpleUnitAxiStreamTop_synth_trace.json",
+    #  removeAllTracedFilesFirst=True) as v:
+    with ReplayingExecutor("../../../tests/SimpleUnitAxiStreamTop_synth_trace.json") as v:
+        r = buildUnit(v, u, "tmp",
+                      synthesize=True,
+                      implement=False,
+                      writeBitstream=False,
+                      # openGui=True,
+                      )
     sr = r.parseUtilizationSynth()
     print(getLutFfLatchBramUramDsp(sr))
     print("Bitstream is in file %s" % (r.bitstreamFile))

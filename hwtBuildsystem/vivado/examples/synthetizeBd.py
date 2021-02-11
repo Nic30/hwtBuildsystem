@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwtBuildsystem.vivado.controller import VivadoCntrl
+from hwtBuildsystem.vivado.executor import VivadoExecutor
 from hwtBuildsystem.vivado.examples.createBdProject import populateBd
 from hwtBuildsystem.vivado.partBuilder import XilinxPartBuilder
-from hwtBuildsystem.vivado.api.project import Project
 
 
-def createSampleBdProject(tmpDir: str, part):
-    p = Project(tmpDir, "SampleBdProject")
+def createSampleBdProject(v: VivadoExecutor, tmpDir: str, part: str):
+    p = v.project(tmpDir, "SampleBdProject")
     if p._exists():
         p._remove()
 
@@ -24,15 +23,11 @@ def createSampleBdProject(tmpDir: str, part):
     yield from p.synthAll()
 
 
-def processCommandsAndOpenGui(tmpDir: str):
-    with VivadoCntrl(logComunication=True) as v:
-        v.process(createSampleBdProject(tmpDir))
-        v.openGui()
-
-
 if __name__ == "__main__":
     tmpDir = "tmp"
     pb = XilinxPartBuilder
     part = XilinxPartBuilder(pb.Family.kintex7, pb.Size._160t,
                              pb.Package.ffg676, pb.Speedgrade._2).name()
-    processCommandsAndOpenGui(tmpDir, part)
+    with VivadoExecutor(logComunication=True) as v:
+        v.process(createSampleBdProject(v, tmpDir, part))
+        v.openGui()

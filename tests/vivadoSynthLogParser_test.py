@@ -5,6 +5,9 @@ import os, unittest
 from unittest.case import TestCase
 from hwtBuildsystem.vivado.logParser.synthesis import VivadoSynthesisLogParser, \
     getLutFfLatchBramUramDsp
+from hwtBuildsystem.fakeTool.replayingExecutor import ReplayingExecutor
+from hwtBuildsystem.vivado.shortcuts import buildUnit
+from hwtBuildsystem.vivado.examples.synthetizeUnit import SimpleUnitAxiStreamTop
 
 
 def getFile(name):
@@ -38,6 +41,18 @@ class VivadoSynthLogParserTC(TestCase):
             p.parse()
         d = getLutFfLatchBramUramDsp(p)
         self.assertDictEqual(d, {'lut': 0, 'ff': 0, 'latch': 0, 'bram': 0, 'uram': 0, 'dsp': 0})
+
+    def test_parsingInProject(self):
+        u = SimpleUnitAxiStreamTop()
+        with ReplayingExecutor(getFile("SimpleUnitAxiStreamTop_synth_trace.json")) as v:
+            r = buildUnit(v, u, "tmp",
+                          synthesize=True,
+                          implement=False,
+                          writeBitstream=False,
+                          # openGui=True,
+                          )
+            sr = getLutFfLatchBramUramDsp(r.parseUtilizationSynth())
+            self.assertDictEqual(sr, {'lut': 0, 'ff': 0, 'latch': 0, 'bram': 0, 'uram': 0, 'dsp': 0})
 
 
 if __name__ == "__main__":
