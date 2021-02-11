@@ -12,3 +12,5 @@ buildsystem for for HWToolkit (hwt) (fpga devel. tools), Vivado, Modelsim, Quart
 * [mflowgen](https://github.com/cornell-brg/mflowgen) - ASIC/FPGA Flow Generator
 * [Vivado-CI](https://github.com/Viq111/Vivado-CI)
 * [VivadoScripting](https://github.com/paulscherrerinstitute/VivadoScripting)
+* [python-quartus](https://github.com/CatherineH/python-quartus)
+* [quartustcl](https://github.com/agrif/quartustcl)
