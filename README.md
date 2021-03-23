@@ -14,3 +14,4 @@ buildsystem for for HWToolkit (hwt) (fpga devel. tools), Vivado, Modelsim, Quart
 * [VivadoScripting](https://github.com/paulscherrerinstitute/VivadoScripting)
 * [python-quartus](https://github.com/CatherineH/python-quartus)
 * [quartustcl](https://github.com/agrif/quartustcl)
+* [pySerdes](https://github.com/jeepx5/pySerdes)
