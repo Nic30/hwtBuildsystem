@@ -48,7 +48,7 @@ class Port():
         else:
             typ = None
 
-        return cls(None, interface._getPhysicalName(),
+        return cls(None, interface._getHdlName(),
                     direction=INTF_DIRECTION.asDirection(interface._direction),
                      typ=typ, hasSubIntf=bool(interface._interfaces),
                      width=width)
