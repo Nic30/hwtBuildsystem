@@ -12,12 +12,14 @@ from hwtBuildsystem.vivado.tcl import VivadoTCL
 
 class VivadoExecutor(ToolExecutor):
 
-    def __init__(self, execFile=VivadoConfig.getExec(),
+    def __init__(self, execFile=None,
                  timeout=6 * 60 * 60,
                  jurnalFile:Optional[str]=None,
                  logFile:Optional[str]=None,
                  logComunication=False,
                  workerCnt=multiprocessing.cpu_count()):
+        if execFile is None:
+            execFile = VivadoConfig.getExec()
         self.execFile = execFile
         self.proc = None
         self.jurnalFile = jurnalFile
