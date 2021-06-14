@@ -1,0 +1,5 @@
+include README.md
+include MANIFEST.in
+
+# find hwtLib/ -name "*.yosys.synth.log" -o -name "*.rpt" | sort | sed 's|\./|include |g'
+
