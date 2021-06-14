@@ -1,7 +1,7 @@
-from mesonbuild.cmake.client import SignalBase
 
 from hwt.constraints import iHdlConstrain, _get_absolute_path, _get_parent_unit
 from hwt.serializer.xdc.serializer import XdcSerializer
+from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.unit import Unit
 from hwtBuildsystem.vivado.api.port import VivadoBoardDesignPort
 from hwtBuildsystem.vivado.xdcGen import XdcPackagePin, XdcIoStandard
@@ -13,7 +13,7 @@ class set_IoPin(iHdlConstrain):
     This signal be mapped.
     """
 
-    def __init__(self, intf: SignalBase,
+    def __init__(self, intf: RtlSignalBase,
                  pin_map,
                  ommit_registration=False):
         assert not intf._interfaces
@@ -48,7 +48,7 @@ class set_IoPin(iHdlConstrain):
 
 class set_IoStandard(iHdlConstrain):
 
-    def __init__(self, intf: SignalBase,
+    def __init__(self, intf: RtlSignalBase,
                  ioStd: XdcIoStandard,
                  ommit_registration=False):
         self.ioStd = ioStd
