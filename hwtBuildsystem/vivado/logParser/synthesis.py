@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import re
 from itertools import islice
+import re
 
 
 class VivadoSynthesisLogParser():
