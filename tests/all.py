@@ -1,3 +1,4 @@
+import sys
 import unittest
 
 from tests.quartusSynthLogParser_test import QuartusSynthLogParserTC
@@ -17,4 +18,7 @@ if __name__ == "__main__":
     for tc in ALL_TCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
-    runner.run(suite)
+    res = runner.run(suite)
+
+    if not res.wasSuccessful():
+        sys.exit(1)
