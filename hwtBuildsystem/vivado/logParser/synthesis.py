@@ -85,7 +85,7 @@ class VivadoSynthesisLogParser():
             "lut": int(i(Slice_Logic, "Slice LUTs*", "Used")),
             "ff": int(i(Slice_Logic, "Register as Flip Flop", "Used")),
             "latch": int(i(Slice_Logic, "Register as Latch", "Used")),
-            'bram': int(i(Memory, "Block RAM Tile", "Used")),
+            'bram': float(i(Memory, "Block RAM Tile", "Used")),
             'uram': 0,
             'dsp': int(i(DSP, "DSPs", "Used")),
         }

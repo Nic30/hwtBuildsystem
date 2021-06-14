@@ -23,8 +23,8 @@ class VivadoProject(SynthesisToolProject):
 
     def __init__(self, executor: "VivadoExecutor", path, name):
         """
-        @param path: path is path of directory where project is stored
-        @name name: name of project folder and project *.xpr/ppr file
+        :param path: path is path of directory where project is stored
+        :name name: name of project folder and project *.xpr/ppr file
         """
         self.executor = executor
         self.name = name
@@ -128,7 +128,8 @@ class VivadoProject(SynthesisToolProject):
     def boardDesign(self, name) -> VivadoBoardDesign:
         return VivadoBoardDesign(self, name)
 
-    def addDesignFiles(self, files):
+    def addFiles(self, files):
+        exe = self.executor.exeCmd
         file_names = []
         file_types = []
         for f in files:
@@ -137,16 +138,23 @@ class VivadoProject(SynthesisToolProject):
             else:
                 assert isinstance(f, str)
                 suffix = os.path.splitext(f)[1].lower()
-                t = self.SUFFIX_TO_FILE_TYPE[suffix]
+                if suffix == ".xdc":
+                    exe(VivadoTCL.add_files([f, ],
+                          fileSet=self.constrFileSet_name,
+                          norecurse=True))
+                    continue
+                else:
+                    t = self.SUFFIX_TO_FILE_TYPE[suffix]
             file_names.append(f)
             file_types.append(t)
 
-        exe = self.executor.exeCmd
+        if not file_names:
+            return
+
         exe(VivadoTCL.add_files(file_names))
         for f, t in zip(file_names, file_types):
             # set_property FILE_TYPE {VHDL 2008} [get_files x.vhd]
             exe(VivadoTCL.set_property(f'[get_files {f:s}]', "FILE_TYPE", f"{{{t:s}}}"))
-
         exe(VivadoTCL.update_compile_order("sources_1"))
 
     def setTop(self, topName):
@@ -155,20 +163,13 @@ class VivadoProject(SynthesisToolProject):
         exe = self.executor.exeCmd
         exe(VivadoTCL.set_property("[current_fileset]", 'top', topName))
 
-    def addConstrainFile(self, filename: str):
-        assert filename.lower().endswith(".xdc"), filename
-        exe = self.executor.exeCmd
-        exe(VivadoTCL.add_files([filename],
-                                  fileSet=self.constrFileSet_name,
-                                  norecurse=True))
-
     def addConstrainObjects(self, name, constrains):
         filename = os.path.join(self.srcDir, name + '.xdc')
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w") as f:
             f.write('\n'.join(map(lambda xdc: xdc.asTcl(), constrains)))
 
-        self.addConstrainFile(filename)
+        self.addFiles([filename, ])
 
     def setTargetLangue(self, lang):
         assert(lang == Language.verilog or lang == Language.vhdl)

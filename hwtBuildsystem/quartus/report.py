@@ -14,6 +14,7 @@ class QuartusReport():
         self.topName = topName
         # synth
         self.utilizationSynth = None
+        self.bitstreamFile = None
 
     def setSynthFileNames(self):
         self.utilizationSynth = os.path.join(self.projectRoot, self.topName + ".map.rpt")

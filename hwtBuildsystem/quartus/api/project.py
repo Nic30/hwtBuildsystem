@@ -66,7 +66,7 @@ class QuartusProject(SynthesisToolProject):
         for f in files:
             exe(f"set_global_assignment -name SDC_FILE '{f:s}'")
 
-    def addDesignFiles(self, files):
+    def addFiles(self, files):
         # https://www.intel.com/content/www/us/en/programmable/documentation/eca1490998903550.html#mnl1088
         exe = self.executor.exeCmd
         for f in files:

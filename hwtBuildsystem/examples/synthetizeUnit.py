@@ -139,7 +139,7 @@ def store_vivado_report_in_db(db_cursor, build_start:datetime.datetime, project:
     db_cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS xilinx_vivado_builds
         ({SQL_COMMON_BULD_REPORT_COLUMNS:s},
-         lut int, ff int, latch int, bram int, uram int, dsp int)''')
+         lut int, ff int, latch int, bram DECIMAL(10, 2), uram DECIMAL(10, 2), dsp int)''')
 
     r = parse_reports(project)
     common = collect_common_build_report_values(component_name, {}, build_start, project)
@@ -155,7 +155,7 @@ def store_quartus_report_in_db(db_cursor, build_start:datetime.datetime, project
     db_cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS intel_quartus_builds
         ({SQL_COMMON_BULD_REPORT_COLUMNS:s},
-         alm int, lut int, ff int, latch int, bram int, uram int, dsp int)''')
+         alm int, lut int, ff int, latch int, bram DECIMAL(10, 2), uram DECIMAL(10, 2), dsp int)''')
     common = collect_common_build_report_values(component_name, {}, build_start, project)
     r = parse_reports(project)
     c.execute(f'''
@@ -183,19 +183,19 @@ if __name__ == "__main__":
         logComunication = True
 
         start = datetime.datetime.now()
-        with YosysExecutor(logComunication=logComunication) as executor:
-            u = component_constructor()
-            # part = ('Intel', "Cyclone V", "5CGXFC7C7F23C8")
-            # part = ('Intel', "Arria 10", "10AX048H1F34E1HG")
-            part = ('Lattice', 'iCE40', 'up5k', 'sg48')
-            project = buildUnit(executor, u, "tmp/yosys", part,
-                          synthesize=True,
-                          implement=False,
-                          writeBitstream=False,
-                          # openGui=True,
-                          )
-            name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
-            store_vivado_report_in_db(c, start, project, name)
+        # with YosysExecutor(logComunication=logComunication) as executor:
+        #     u = component_constructor()
+        #     # part = ('Intel', "Cyclone V", "5CGXFC7C7F23C8")
+        #     # part = ('Intel', "Arria 10", "10AX048H1F34E1HG")
+        #     part = ('Lattice', 'iCE40', 'up5k', 'sg48')
+        #     project = buildUnit(executor, u, "tmp/yosys", part,
+        #                   synthesize=True,
+        #                   implement=False,
+        #                   writeBitstream=False,
+        #                   # openGui=True,
+        #                   )
+        #     name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
+        #     store_vivado_report_in_db(c, start, project, name)
 
         # with RecordingExecutor(
         #  VivadoExecutor(logComunication=True, workerCnt=1),
