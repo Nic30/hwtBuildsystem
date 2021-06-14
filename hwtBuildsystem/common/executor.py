@@ -1,3 +1,7 @@
+from typing import Optional
+
+from hwtBuildsystem.common.project import SynthesisToolProject
+from hwtBuildsystem.common.cmdResult import TclCmdResult
 
 
 class ToolExecutor():
@@ -6,19 +10,17 @@ class ToolExecutor():
     Tool executor is an object which controlls some external tool in real time on command-output basis.
     """
 
-    def _process(self, cmd):
-        raise NotImplementedError("Should be implemented in concrete implementation of this class")
+    def __init__(self, workerCnt:Optional[int]=None):
+        """
+        :param workerCnt: used to limit the number of worker threads
+        """
+        self.workerCnt = workerCnt
 
-    def project(self, root, name:str):
+    def getVersion(self):
         raise NotImplementedError()
 
-    def process(self, cmds):
-        """
-        Process a list of commands and return the results
-        """
-        results = []
-        for cmd in cmds:
-            res = self._process(cmd)
-            results.append(res)
-        return results
+    def exeCmd(self, cmd) -> TclCmdResult:
+        raise NotImplementedError("Should be implemented in concrete implementation of this class")
 
+    def project(self, root, name:str) -> SynthesisToolProject:
+        raise NotImplementedError()

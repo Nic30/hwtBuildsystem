@@ -2,6 +2,7 @@ import json
 import os
 from typing import List
 
+from hwtBuildsystem.common.cmdResult import TclCmdResult
 from hwtBuildsystem.common.executor import ToolExecutor
 from hwtBuildsystem.fakeTool.utils import FileOp, RecordingExecutorEncoder
 
@@ -49,7 +50,7 @@ class RecordingExecutor(ToolExecutor):
         self.cmdI = 0
         self.history = {}
 
-    def _process(self, cmd: str):
+    def exeCmd(self, cmd) -> TclCmdResult:
         res = self.executor._process(cmd)
         fileChanges = []
         for f, (prev_st, prev_content) in self.filesToWatch.items():
@@ -72,9 +73,6 @@ class RecordingExecutor(ToolExecutor):
     def __enter__(self):
         self.executor.__enter__()
         return self
-
-    def project(self, root, name:str):
-        return self.executor.project(root, name)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.executor.__exit__(exc_type, exc_val, exc_tb)

@@ -3,7 +3,9 @@ import json
 import os
 from pathlib import Path
 
+from hwtBuildsystem.common.cmdResult import TclCmdResult
 from hwtBuildsystem.common.executor import ToolExecutor
+from hwtBuildsystem.common.project import SynthesisToolProject
 from hwtBuildsystem.fakeTool.recordingExecutor import RecordingExecutor
 from hwtBuildsystem.fakeTool.utils import RecordingExecutorJSON_decode_history, \
     RecordingExecutorJSON_decode
@@ -28,13 +30,13 @@ class ReplayingExecutor(ToolExecutor):
         self.executorCls = getattr(importlib.import_module(execMod), execCls)
         self.workerCnt = rec['workerCnt']
 
-    def __enter__(self):
+    def __enter__(self) -> 'ReplayingExecutor':
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def _process(self, cmd: str):
+    def exeCmd(self, cmd) -> TclCmdResult:
         res, fileOps = self.history[self.cmdI][cmd]
         for f, op in fileOps:
             if op.mode == 'd':
@@ -47,5 +49,5 @@ class ReplayingExecutor(ToolExecutor):
         self.cmdI += 1
         return res
 
-    def project(self, root, name:str):
+    def project(self, root, name:str) -> SynthesisToolProject:
         return self.executorCls.project(self, root, name)

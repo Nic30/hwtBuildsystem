@@ -3,24 +3,23 @@
 
 import os, unittest
 from unittest.case import TestCase
-from hwtBuildsystem.vivado.logParser.synthesis import VivadoSynthesisLogParser, \
-    getLutFfLatchBramUramDsp
+from hwtBuildsystem.vivado.logParser.synthesis import VivadoSynthesisLogParser
 from hwtBuildsystem.fakeTool.replayingExecutor import ReplayingExecutor
-from hwtBuildsystem.vivado.shortcuts import buildUnit
-from hwtBuildsystem.vivado.examples.synthetizeUnit import SimpleUnitAxiStreamTop
+from hwtBuildsystem.examples.example_units import ExampleTop0
+from hwtBuildsystem.examples.synthetizeUnit import buildUnit
 
 
 def getFile(name):
     return os.path.join(os.path.dirname(__file__), name)
 
 
-SimpleUnitAxiStreamTop_synth = getFile("SimpleUnitAxiStreamTop_utilization_synth.rpt")
+ExampleTop0_synth = getFile("ExampleTop0_utilization_synth.rpt")
 
 
 class VivadoSynthLogParserTC(TestCase):
 
     def test_tableParsing(self):
-        with open(SimpleUnitAxiStreamTop_synth) as f:
+        with open(ExampleTop0_synth) as f:
             p = VivadoSynthesisLogParser(f.read())
             p.parse()
         self.assertSequenceEqual(sorted(p.tables.keys()), [
@@ -36,22 +35,22 @@ class VivadoSynthLogParserTC(TestCase):
             'Summary of Registers by Type'])
 
     def test_tableData(self):
-        with open(SimpleUnitAxiStreamTop_synth) as f:
+        with open(ExampleTop0_synth) as f:
             p = VivadoSynthesisLogParser(f.read())
             p.parse()
-        d = getLutFfLatchBramUramDsp(p)
+        d = p.getBasicResourceReport()
         self.assertDictEqual(d, {'lut': 0, 'ff': 0, 'latch': 0, 'bram': 0, 'uram': 0, 'dsp': 0})
 
     def test_parsingInProject(self):
-        u = SimpleUnitAxiStreamTop()
-        with ReplayingExecutor(getFile("SimpleUnitAxiStreamTop_synth_trace.json")) as v:
+        u = ExampleTop0()
+        with ReplayingExecutor(getFile("ExampleTop0_synth_trace.json")) as v:
             r = buildUnit(v, u, "tmp",
                           synthesize=True,
                           implement=False,
                           writeBitstream=False,
                           # openGui=True,
                           )
-            sr = getLutFfLatchBramUramDsp(r.parseUtilizationSynth())
+            sr = r.parseUtilizationSynth().getBasicResourceReport()
             self.assertDictEqual(sr, {'lut': 0, 'ff': 0, 'latch': 0, 'bram': 0, 'uram': 0, 'dsp': 0})
 
 

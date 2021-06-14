@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwtBuildsystem.vivado.api.boardDesign import VivadoBoardDesign
+from hwtBuildsystem.vivado.api.net import VivadoBoardDesignNet
+from hwtBuildsystem.vivado.api.port import VivadoBoardDesignPort
 from hwtBuildsystem.vivado.executor import VivadoExecutor
 from hwtBuildsystem.vivado.partBuilder import XilinxPartBuilder
 from ipCorePackager.constants import DIRECTION
-from hwtBuildsystem.vivado.api.boardDesign import BoardDesign
-from hwtBuildsystem.vivado.api.port import Port
-from hwtBuildsystem.vivado.api.net import Net
 
 
-def populateBd(bd: BoardDesign):
-    p_in = Port(bd, "portIn", direction=DIRECTION.IN)
-    yield from p_in.create()
+def examplePopulateBd(bd: VivadoBoardDesign):
+    p_in = VivadoBoardDesignPort(bd, "portIn", direction=DIRECTION.IN)
+    p_in.create()
 
-    p_out = Port(bd, "portOut", direction=DIRECTION.OUT)
-    yield from p_out.create()
+    p_out = VivadoBoardDesignPort(bd, "portOut", direction=DIRECTION.OUT)
+    p_out.create()
 
-    yield from Net.createMultipleFromDict({p_out: p_in})
+    VivadoBoardDesignNet.createMultipleFromDict(bd, {p_out: p_in})
 
 
 def createSampleBdProject(v: VivadoExecutor, tmpDir):
@@ -27,14 +27,14 @@ def createSampleBdProject(v: VivadoExecutor, tmpDir):
     if p._exists():
         p._remove()
 
-    yield from p.create()
-    yield from p.setPart(part)
+    p.create()
+    p.setPart(part)
 
     bd = p.boardDesign("test1")
-    yield from bd.create()
-    yield from populateBd(bd)
-    yield from bd.mkWrapper()
-    yield from bd.exportToTCL(tmpDir + 'test1.tcl', force=True)
+    bd.create()
+    examplePopulateBd(bd)
+    bd.mkWrapper()
+    bd.exportToTCL(tmpDir + 'test1.tcl', force=True)
 
 
 def showCommands(tmpDir: str):
@@ -50,9 +50,9 @@ if __name__ == "__main__":
 
     print("#processCommandsWithOpenedLogger")
     with VivadoExecutor(logComunication=True) as v:
-        v.process(createSampleBdProject(v, tmpDir))
+        createSampleBdProject(v, tmpDir)
 
     print("processCommandsAndOpenGui")
     with VivadoExecutor(logComunication=True) as v:
-        v.process(createSampleBdProject(v, tmpDir))
+        createSampleBdProject(v, tmpDir)
         v.openGui()

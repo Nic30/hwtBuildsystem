@@ -1,13 +1,13 @@
-import multiprocessing
 import os
 import pexpect
+from subprocess import check_output
 from typing import Optional
 
 from hwtBuildsystem.common.cmdResult import TclCmdResult
 from hwtBuildsystem.common.executor import ToolExecutor
 from hwtBuildsystem.vivado.api.project import VivadoProject
 from hwtBuildsystem.vivado.config import VivadoConfig
-from hwtBuildsystem.vivado.tcl import VivadoTCL
+from hwtBuildsystem.vivado.api.tcl import VivadoTCL
 
 
 class VivadoExecutor(ToolExecutor):
@@ -17,7 +17,8 @@ class VivadoExecutor(ToolExecutor):
                  jurnalFile:Optional[str]=None,
                  logFile:Optional[str]=None,
                  logComunication=False,
-                 workerCnt=multiprocessing.cpu_count()):
+                 workerCnt:Optional[int]=None):
+        super(VivadoExecutor, self).__init__(workerCnt)
         if execFile is None:
             execFile = VivadoConfig.getExec()
         self.execFile = execFile
@@ -29,9 +30,8 @@ class VivadoExecutor(ToolExecutor):
         self.guiOpened = False
         self.logComunication = logComunication
         self.encoding = 'ASCII'
-        self.workerCnt = workerCnt
 
-    def __enter__(self):
+    def __enter__(self) -> 'VivadoExecutor':
         cmd = ["-mode", 'tcl' , "-notrace"]
         if self.verbose:
             cmd.append('-verbose')
@@ -61,13 +61,16 @@ class VivadoExecutor(ToolExecutor):
 
     def openGui(self):
         """
-        @attention: this method disconnects controller and opens gui
+       :attention: this method disconnects controller and opens gui
         """
-        list(self.process([VivadoTCL.start_gui()]))  # list to execute because process() is  generator
+        self.exeCmd(VivadoTCL.start_gui())
         if self.proc.isalive():
             self.proc.wait()
 
-    def _process(self, cmd: str):
+    def getVersion(self):
+        return check_output([self.execFile, '-version']).decode()
+
+    def exeCmd(self, cmd: str) -> TclCmdResult:
         p = self.proc
         if self.firstCmd:
             p.expect("Vivado%", timeout=self.timeout)  # block while command line init
@@ -88,12 +91,12 @@ class VivadoExecutor(ToolExecutor):
         t = p.before.decode(self.encoding)
         if self.logComunication:
             print(cmd)
-            print(t)
+            print(t, end="")
         res = TclCmdResult.fromStdoutStr(cmd, t)
         res.raiseOnErrors()
         return res
 
-    def project(self, root, name):
+    def project(self, root, name) -> VivadoProject:
         return VivadoProject(self, root, name)
 
     def rmLogs(self):
@@ -104,9 +107,13 @@ class VivadoExecutor(ToolExecutor):
 
 
 if __name__ == "__main__":
+    """
+    :note: An example of usage
+    """
     with VivadoExecutor() as v:
-        _op, _pwd, _dir = v.process(['open_project examples/tmp/SimpleUnitAxiStream/SimpleUnitAxiStream.xpr', 'pwd', 'dir'])
-        print(_op.resultText)
+        print(v.getVersion())
+        _pwd = v.exeCmd('pwd')
+        _dir = v.exeCmd('dir')
         ls = os.listdir(_pwd.resultText)
         vivadoLs = _dir.resultText.split()
         ls.sort()

@@ -1,8 +1,14 @@
 import unittest
+
+from tests.quartusSynthLogParser_test import QuartusSynthLogParserTC
 from tests.vivadoSynthLogParser_test import VivadoSynthLogParserTC
+from tests.yosysSynthLogParser_test import YosysSynthLogParserTC
+
 
 ALL_TCs = [
     VivadoSynthLogParserTC,
+    QuartusSynthLogParserTC,
+    YosysSynthLogParserTC,
 ]
 
 if __name__ == "__main__":

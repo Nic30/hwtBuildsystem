@@ -1,5 +1,4 @@
-from hwtBuildsystem.vivado.tcl import VivadoTCL
-from ipCorePackager.constants import DIRECTION
+from hwtBuildsystem.vivado.api.tcl import VivadoTCL
 
 
 class PortType():
@@ -20,41 +19,26 @@ class SimpleXDCProp():
         return VivadoTCL.set_property('[' + self.port.get(forHdlWrapper=True) + ']', self._propName, self.mode)
 
 
-class VccAuxIo(SimpleXDCProp):
+class XdcVccAuxIo(SimpleXDCProp):
     _propName = "VCCAUX_IO"
     NORMAL = "NORMAL"
     DONTCARE = "DONTCARE"
 
 
-class Slew(SimpleXDCProp):
+class XdcSlew(SimpleXDCProp):
     _propName = "SLEW"
     FAST = "FAST"
 
 
-class Loc(SimpleXDCProp):
+class XdcLoc(SimpleXDCProp):
     _propName = "LOC"
 
 
-class PackagePin(SimpleXDCProp):
+class XdcPackagePin(SimpleXDCProp):
     _propName = 'PACKAGE_PIN'
 
 
-class FalsePath():
-
-    def __init__(self, network):
-        self.network = network
-
-    def asTcl(self):
-        n = self.network
-        if n.direction == DIRECTION.IN:
-            return  VivadoTCL.set_false_path(_from="[" + self.network.get(forHdlWrapper=True) + ']')
-        elif n.direction == DIRECTION.OUT:
-            return  VivadoTCL.set_false_path(to='[' + self.network.get(forHdlWrapper=True) + ']')
-        else:
-            raise Exception("Invalid direction (%s) of port %s" % (str(n.direction), n.name))
-
-
-class IoStandard(SimpleXDCProp):
+class XdcIoStandard(SimpleXDCProp):
     """
     Io standard of pin thats mean setting of voltage, open-drain etc...
     """
@@ -67,6 +51,8 @@ class IoStandard(SimpleXDCProp):
     DIFF_HSTL_I = "DIFF_HSTL_I"
     HSTL_I = "HSTL_I"
 
+# file:///opt/intelFPGA/18.0/quartus/common/help/webhelp/index.htm#reference/glossary/def_iostandard.htm
+
 
 class XdcTextWrapper():
     """Wrapper around tcl in text"""
@@ -78,9 +64,9 @@ class XdcTextWrapper():
         return self.text
 
 
-class Comment(XdcTextWrapper):
+class XdcComment(XdcTextWrapper):
     """tcl xdc comment"""
 
     def __init__(self, text):
-        super(Comment, self).__init__("#" + text)
+        super(XdcComment, self).__init__("#" + text)
 

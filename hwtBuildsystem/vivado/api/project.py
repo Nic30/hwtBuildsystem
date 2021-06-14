@@ -1,15 +1,25 @@
 import os
-import shutil
 from typing import Optional
 
+from hwtBuildsystem.common.project import SynthesisToolProject
 from hwtBuildsystem.vivado.api import Language, FILE_TYPE
-from hwtBuildsystem.vivado.api.boardDesign import BoardDesign
 from hwtBuildsystem.vivado.report import VivadoReport
-from hwtBuildsystem.vivado.tcl import VivadoTCL
+from hwtBuildsystem.vivado.api.tcl import VivadoTCL
 import xml.etree.ElementTree as ET
+from hwtBuildsystem.vivado.api.boardDesign import VivadoBoardDesign
 
 
-class VivadoProject():
+class VivadoProject(SynthesisToolProject):
+    SUFFIX_TO_FILE_TYPE = {
+        ".v": FILE_TYPE.VERILOG,
+        ".vhd": FILE_TYPE.VHDL_2008,
+        ".vh": FILE_TYPE.VERILOG_HEADER,
+        ".svh": FILE_TYPE.VERILOG_HEADER,
+        ".sv": FILE_TYPE.SYSTEMVERILOG,
+        ".edif": FILE_TYPE.EDIF,
+        ".ngc": FILE_TYPE.NGC,
+        ".tcl": FILE_TYPE.TCL,
+    }
 
     def __init__(self, executor: "VivadoExecutor", path, name):
         """
@@ -29,38 +39,29 @@ class VivadoProject():
         self._report = VivadoReport(self.path, self.name, None)
 
     def create(self, in_memory=False):
-        yield VivadoTCL.create_project(self.path, self.name, in_memory=in_memory)
-        yield from self.setTargetLangue(Language.vhdl)
+        exe = self.executor.exeCmd
+        exe(VivadoTCL.create_project(self.path, self.name, in_memory=in_memory))
+        self.setTargetLangue(Language.vhdl)
         if self.executor.workerCnt is not None:
-            yield f"set_param general.maxThreads {self.executor.workerCnt:d}"
-
-    def setFileType(self, fileName: str, fileType:FILE_TYPE):
-        """
-        set_property FILE_TYPE {VHDL 2008} [get_files x.vhd]
-        """
-        yield VivadoTCL.set_property(f'[get_files {fileName:s}]', "FILE_TYPE", f"{{{fileType:s}}}")
-
-    def _exists(self):
-        return os.path.exists(self.path)
-
-    def _remove(self):
-        shutil.rmtree(self.path)
+            exe(f"set_param general.maxThreads {self.executor.workerCnt:d}")
 
     def get(self):
         return "[current_project]"
 
     def updateAllCompileOrders(self):
+        exe = self.executor.exeCmd
         for g in self.listFileGroups():
-            yield VivadoTCL.update_compile_order(g)
+            exe(VivadoTCL.update_compile_order(g))
 
     def run(self, jobName: str, to_step:Optional[str]=None):
-        yield VivadoTCL.reset_run(jobName)
-        yield VivadoTCL.launch_runs([jobName], workerCnt=self.executor.workerCnt, to_step=to_step)
-        yield VivadoTCL.wait_on_run(jobName)
+        exe = self.executor.exeCmd
+        exe(VivadoTCL.reset_run(jobName))
+        exe(VivadoTCL.launch_runs([jobName], workerCnt=self.executor.workerCnt, to_step=to_step))
+        exe(VivadoTCL.wait_on_run(jobName))
 
     def synthAll(self):
         for s in self.listSynthesis():
-            yield from self.run(s)
+            self.run(s)
         self._report.setSynthFileNames()
 
     # def synth(self, quiet=False):
@@ -69,11 +70,11 @@ class VivadoProject():
 
     def implemAll(self):
         for s in self.listIpmplementations():
-            yield from self.run(s)
+            self.run(s)
         self._report.setImplFileNames()
 
     def writeBitstream(self):
-        yield from self.run("impl_1", to_step="write_bitstream")  # impl_1 -to_step write_bitstream -jobs 8
+        self.run("impl_1", to_step="write_bitstream")  # impl_1 -to_step write_bitstream -jobs 8
         self._report.setBitstreamFileName()
 
     def listRuns(self):
@@ -108,47 +109,69 @@ class VivadoProject():
 
     def setPart(self, partName: str):
         self.part = partName
-        yield VivadoTCL.set_property(self.get(), "part", partName)
+        exe = self.executor.exeCmd
+        exe(VivadoTCL.set_property(self.get(), "part", partName))
 
     def setIpRepoPaths(self, paths):
-        yield VivadoTCL.set_property(self.get(), name='ip_repo_paths', valList=paths)
-        yield VivadoTCL.update_ip_catalog()
+        exe = self.executor.exeCmd
+        exe(VivadoTCL.set_property(self.get(), name='ip_repo_paths', valList=paths))
+        exe(VivadoTCL.update_ip_catalog())
 
     def open(self):
-        yield VivadoTCL.open_project(self.projFile)
+        exe = self.executor.exeCmd
+        exe(VivadoTCL.open_project(self.projFile))
 
     def close(self):
-        yield VivadoTCL.close_project()
+        exe = self.executor.exeCmd
+        exe(VivadoTCL.close_project())
 
-    def boardDesign(self, name) -> BoardDesign:
-        return BoardDesign(self, name)
+    def boardDesign(self, name) -> VivadoBoardDesign:
+        return VivadoBoardDesign(self, name)
 
     def addDesignFiles(self, files):
-        yield VivadoTCL.add_files(files)
-        yield VivadoTCL.update_compile_order("sources_1")
+        file_names = []
+        file_types = []
+        for f in files:
+            if isinstance(f, tuple):
+                f, t = f
+            else:
+                assert isinstance(f, str)
+                suffix = os.path.splitext(f)[1].lower()
+                t = self.SUFFIX_TO_FILE_TYPE[suffix]
+            file_names.append(f)
+            file_types.append(t)
+
+        exe = self.executor.exeCmd
+        exe(VivadoTCL.add_files(file_names))
+        for f, t in zip(file_names, file_types):
+            # set_property FILE_TYPE {VHDL 2008} [get_files x.vhd]
+            exe(VivadoTCL.set_property(f'[get_files {f:s}]', "FILE_TYPE", f"{{{t:s}}}"))
+
+        exe(VivadoTCL.update_compile_order("sources_1"))
 
     def setTop(self, topName):
         self.top = topName
         self._report.topName = topName
-        yield VivadoTCL.set_property("[current_fileset]", 'top', topName)
+        exe = self.executor.exeCmd
+        exe(VivadoTCL.set_property("[current_fileset]", 'top', topName))
 
-    def addXdcFile(self, filename: str):
-        yield VivadoTCL.add_files([filename],
+    def addConstrainFile(self, filename: str):
+        assert filename.lower().endswith(".xdc"), filename
+        exe = self.executor.exeCmd
+        exe(VivadoTCL.add_files([filename],
                                   fileSet=self.constrFileSet_name,
-                                  norecurse=True)
+                                  norecurse=True))
 
-    def addXDCs(self, name, XDCs):
+    def addConstrainObjects(self, name, constrains):
         filename = os.path.join(self.srcDir, name + '.xdc')
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w") as f:
-            f.write('\n'.join(map(lambda xdc: xdc.asTcl(), XDCs)))
+            f.write('\n'.join(map(lambda xdc: xdc.asTcl(), constrains)))
 
-        yield from self.addXdcFile(filename)
+        self.addConstrainFile(filename)
 
     def setTargetLangue(self, lang):
         assert(lang == Language.verilog or lang == Language.vhdl)
-        yield VivadoTCL.set_property(self.get(), "target_language", lang)
-
-    def report(self):
-        return self._report
+        exe = self.executor.exeCmd
+        exe(VivadoTCL.set_property(self.get(), "target_language", lang))
 

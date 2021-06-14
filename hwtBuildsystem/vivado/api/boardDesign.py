@@ -1,12 +1,13 @@
 import os
-from hwtBuildsystem.vivado.tcl import VivadoTCL
+
 from hwtBuildsystem.vivado.api import ConfigErr
-from hwtBuildsystem.vivado.api.unit import VivadoUnit
+from hwtBuildsystem.vivado.api.tcl import VivadoTCL
+from hwtBuildsystem.vivado.api.unit import VivadoBoardDesignUnit
 
 
-class BoardDesign():
+class VivadoBoardDesign():
 
-    def __init__(self, project, name=None):
+    def __init__(self, project: 'VivadoProject', name=None):
         j = os.path.join
         self.project = project
         self.name = name
@@ -16,21 +17,24 @@ class BoardDesign():
         self.ports = {}
 
     def create(self):
-        yield  VivadoTCL.create_bd_design(self.name)
+        exe = self.project.executor.exeCmd
+        exe(VivadoTCL.create_bd_design(self.name))
 
     def delete(self, fromDisk=True):
-        yield VivadoTCL.remove_files([self.bdFile])
-        yield VivadoTCL.remove_files([self.bdWrapperFile])
+        exe = self.project.executor.exeCmd
+        exe(VivadoTCL.remove_files([self.bdFile]))
+        exe(VivadoTCL.remove_files([self.bdWrapperFile]))
 
         if fromDisk:
-            yield VivadoTCL.file.delete([self.bdDir])
-            yield VivadoTCL.file.delete([self.bdWrapperFile])
+            exe(VivadoTCL.file.delete([self.bdDir]))
+            exe(VivadoTCL.file.delete([self.bdWrapperFile]))
 
     def exist(self):
         return os.path.exists(self.bdFile)
 
     def open(self):
-        yield VivadoTCL.open_bd_design(self.bdFile)
+        exe = self.project.executor.exeCmd
+        exe(VivadoTCL.open_bd_design(self.bdFile))
 
     def insertPort(self, port):
         name_l = port.name.lower()
@@ -41,42 +45,46 @@ class BoardDesign():
 
     def importFromTcl(self, fileName, refrestTclIfExists=True):
         """
-        @param refrestIfExists: refresh tcl file from bd before opening design
+        :param refrestIfExists: refresh tcl file from bd before opening design
         """
         p = os.path
         assert(self.name == p.splitext(p.basename(fileName))[0])  # assert name of bd in tcl is correct
 
         # update tcl from bd
         if p.exists(self.bdFile) and refrestTclIfExists:
-            yield from self.open()
-            yield from self.exportToTCL(fileName, force=True)
+            self.open()
+            self.exportToTCL(fileName, force=True)
 
+        exe = self.project.executor.exeCmd
         # tcl file does not contains revisions of ips
-        yield VivadoTCL.update_ip_catalog()
+        exe(VivadoTCL.update_ip_catalog())
 
         # remove old bd
-        yield from self.delete()
+        self.delete()
 
         # import new from tcl
-        yield VivadoTCL.source(fileName)
+        exe(VivadoTCL.source(fileName))
 
         # generate wrapper and set is as top
-        yield from self.mkWrapper()
+        self.mkWrapper()
 
     def exportToTCL(self, fileName, force=False):
-        yield VivadoTCL.write_bd_tcl(fileName, force=force)
+        exe = self.project.executor.exeCmd
+        exe(VivadoTCL.write_bd_tcl(fileName, force=force))
 
     def mkWrapper(self):
-        yield VivadoTCL.make_wrapper(self.bdFile)
-        yield VivadoTCL.add_files([self.bdWrapperFile])
-        yield from self.project.updateAllCompileOrders()
+        exe = self.project.executor.exeCmd
+        exe(VivadoTCL.make_wrapper(self.bdFile))
+        exe(VivadoTCL.add_files([self.bdWrapperFile]))
+        self.project.updateAllCompileOrders()
 
     def setAsTop(self):
-        yield from self.project.setTop(self.name + "_wrapper")
+        return self.project.setTop(self.name + "_wrapper")
 
-    def unit(self, name, ipCore=None):
-        return VivadoUnit(name, ipCore=ipCore)
+    def unit(self, name, ipCore=None) -> VivadoBoardDesignUnit:
+        return VivadoBoardDesignUnit(name, ipCore=ipCore)
 
     def regenerateLayout(self):
-        yield VivadoTCL.regenerate_bd_layout()
+        exe = self.project.executor.exeCmd
+        exe(VivadoTCL.regenerate_bd_layout())
 

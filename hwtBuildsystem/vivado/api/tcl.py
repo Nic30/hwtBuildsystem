@@ -205,9 +205,9 @@ class VivadoProjectOpsTCL():
     @staticmethod
     def create_project(_dir, name, in_memory=False):
         """
-        @param in_memory:     Create an in-memory project
-        @param name:          Project name
-        @param _dir:          Directory where the project file is saved
+        :param in_memory:     Create an in-memory project
+        :param name:          Project name
+        :param _dir:          Directory where the project file is saved
         """
         params = [name, _dir]
         if in_memory:
@@ -271,15 +271,6 @@ class VivadoTCL(CommonTcl, VivadoFSOpsTCL, VivadoBDOpsTCL, VivadoProjectOpsTCL, 
     def start_gui():
         return "start_gui"
 
-    @staticmethod
-    def set_false_path(to: Optional[str]=None, _from: Optional[str]=None):
-        assert(bool(to) != bool(_from))  # only one has to be not None
-        params = []
-        if to is not None:
-            params.append(f"-to {to:s}")
-        if _from is not None:
-            params.append(f"-from {_from:s}")
-        return "set_false_path %s" % (' '.join(params))
 
     class sim():
 

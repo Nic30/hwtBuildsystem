@@ -71,25 +71,24 @@ class VivadoSynthesisLogParser():
                 if m:
                     table_name = m.group(2)
 
+    def getBasicResourceReport(self):
+        """
+        A small report function which extracts the most important values
+        from the tables contained in a report.
+        """
+        Slice_Logic = self.tables["Slice Logic"]
+        Memory = self.tables["Memory"]
+        DSP = self.tables["DSP"]
+        i = self.indexByRowNameColumnName
 
-def getLutFfLatchBramUramDsp(rp: VivadoSynthesisLogParser):
-    """
-    A small report function which extracts the most important values
-    from the tables contained in a report.
-    """
-    Slice_Logic = rp.tables["Slice Logic"]
-    Memory = rp.tables["Memory"]
-    DSP = rp.tables["DSP"]
-    i = rp.indexByRowNameColumnName
-
-    return {
-        "lut": int(i(Slice_Logic, "Slice LUTs*", "Used")),
-        "ff": int(i(Slice_Logic, "Register as Flip Flop", "Used")),
-        "latch": int(i(Slice_Logic, "Register as Latch", "Used")),
-        'bram': int(i(Memory, "Block RAM Tile", "Used")),
-        'uram': 0,
-        'dsp': int(i(DSP, "DSPs", "Used")),
-    }
+        return {
+            "lut": int(i(Slice_Logic, "Slice LUTs*", "Used")),
+            "ff": int(i(Slice_Logic, "Register as Flip Flop", "Used")),
+            "latch": int(i(Slice_Logic, "Register as Latch", "Used")),
+            'bram': int(i(Memory, "Block RAM Tile", "Used")),
+            'uram': 0,
+            'dsp': int(i(DSP, "DSPs", "Used")),
+        }
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
-from hwtBuildsystem.vivado.tcl import VivadoTCL
+from hwtBuildsystem.vivado.api.tcl import VivadoTCL
 
 
-class Pin():
+class VivadoBoardDesignPin():
 
     def __init__(self, bd, name, hasSubIntf=False):
         self.bd = bd

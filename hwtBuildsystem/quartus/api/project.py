@@ -1,34 +1,107 @@
-from hwtBuildsystem.vivado.api import Language
 import os
+from pathlib import Path
+from typing import Tuple
+
+from hwtBuildsystem.common.project import SynthesisToolProject
+from hwtBuildsystem.quartus.report import QuartusReport
 
 
-class QuartusProject():
+class QuartusProject(SynthesisToolProject):
+    """
+    :attention: After project is opened the currend directory is changed to
 
-    def __init__(self, path, name, workerCnt=None):
-        """
-        @param path: path is path of directory where project is stored
-        @name name: name of project folder and project *.xpr/ppr file
-        """
+    """
+
+    SUFFIX_TO_FILE_TYPE = {
+        ".v": "VERILOG_FILE",
+        ".vhd": "VHDL_FILE",
+        ".vh": "VERILOG_INCLUDE_FILE",
+        ".svh": "VERILOG_INCLUDE_FILE",
+        ".sv": "SYSTEMVERILOG_FILE",
+        ".sdc": "SDC_FILE",
+        ".ip": "IP_FILE",
+    }
+
+    def __init__(self, executor: "QuartusExecutor", path:str, name:str):
+        super(QuartusProject, self).__init__(executor, path, name)
         self.name = name
-        j = os.path.join
-        self.path = j(path, name)
-        self.projFile = j(path, name, name + ".xpr")
-        self.srcDir = j(path, name, name + ".srcs/sources_1")  # [TODO] needs to be derived from fs or project
-        self.bdSrcDir = j(self.srcDir, 'bd')
-        self.constrFileSet_name = 'constrs_1'
-        self.part = None
-        self.top = None
-        self.workerCnt = workerCnt
+        # j = os.path.join
+        # self.projFile = j(path, name, name + ".xpr")
 
-    def create(self, part):
-        yield f'project_new {self.name:s} -overwrite'
-        # Set top level info
-        family, device, top # todo
-        yield f'set_global_assignment -name FAMILY "{family:s}"'
-        yield f'set_global_assignment -name DEVICE {device:s}'
-        yield f'set_global_assignment -name TOP_LEVEL_ENTITY {self.top:s}'
-        # set_global_assignment -name SDC_FILE ''' + constraints_filepath +
+        self._report = QuartusReport(self.path, self.name, None)
 
-        yield from self.setTargetLangue(Language.vhdl)
-        if self.workerCnt is not None:
-            yield f"set_param general.maxThreads {self.workerCnt:d}"
+    def _defaultTclImports(self):
+        exe = self.executor.exeCmd
+        exe(f'package require ::quartus::project')
+        exe(f'package require ::quartus::flow')
+
+    def setPart(self, part: Tuple[str, str]):
+        """
+        :param part: tuple family, part number e.g ("Cyclone", "EP1C12F256C6")
+        """
+        self.part = part
+        family, device = part
+        exe = self.executor.exeCmd
+        exe(f'set_global_assignment -name FAMILY "{family:s}"')
+        exe(f'set_global_assignment -name DEVICE {device:s}')
+
+    def setTop(self, topName):
+        self.top = topName
+        self._report.topName = topName
+        exe = self.executor.exeCmd
+        exe(f'set_global_assignment -name TOP_LEVEL_ENTITY {self.top:s}')
+
+    def create(self):
+        # https://www.intel.com/content/www/us/en/programmable/documentation/jeb1529967983176.html#mwh1410471006061
+        os.makedirs(self.path, exist_ok=True)
+        exe = self.executor.exeCmd
+        exe(f'cd "{self.path:s}"')
+        exe(f'project_new {self.name:s} -overwrite')
+        if self.executor.workerCnt is not None:
+            exe(f"set_param general.maxThreads {self.workerCnt:d}")
+        exe(f'project_open {self.name:s}')
+
+    def addConstrainFiles(self, files):
+        exe = self.executor.exeCmd
+        for f in files:
+            exe(f"set_global_assignment -name SDC_FILE '{f:s}'")
+
+    def addDesignFiles(self, files):
+        # https://www.intel.com/content/www/us/en/programmable/documentation/eca1490998903550.html#mnl1088
+        exe = self.executor.exeCmd
+        for f in files:
+            suffix = os.path.splitext(f)[1].lower()
+            t = self.SUFFIX_TO_FILE_TYPE[suffix]
+            f = str(Path(f).relative_to(self.path))
+            if suffix == ".vhd":
+                lib = "work"
+                exe(f'set_global_assignment -name {t:s} "{f:s}" -hdl_version VHDL_2008 -library {lib:s}')
+            else:
+                exe(f'set_global_assignment -name {t:s} "{f:s}"')
+
+    def synthAll(self):
+        assert self.top is not None
+        self._defaultTclImports()
+        exe = self.executor.exeCmd
+        exe(f'execute_module -tool ipg')
+        exe(f'execute_module -tool map')
+
+        self._report.setSynthFileNames()
+
+    def implemAll(self):
+        self._defaultTclImports()
+        exe = self.executor.exeCmd
+        exe(f'execute_module -tool fit')
+        exe(f'execute_module -tool sta')
+
+        self._report.setImplFileNames()
+
+    def writeBitstream(self):
+        self._defaultTclImports()
+        exe = self.executor.exeCmd
+        exe('execute_module -tool asm')
+        self._report.setBitstreamFileName()
+
+    def close(self):
+        exe = self.executor.exeCmd
+        exe('project_close')

@@ -1,25 +1,27 @@
-from hwtBuildsystem.vivado.tcl import VivadoTCL
+from hwtBuildsystem.vivado.api.tcl import VivadoTCL
 
 
-class Net():
+class VivadoBoardDesignNet():
 
-    def __init__(self, src, dst):
+    def __init__(self, bd: 'VivadoBoardDesign', src, dst):
+        self.bd = bd
         self.src = src
         self.dst = dst
 
     def create(self):
         src = self.src.get()
         dst = self.dst.get()
+        exe = self.bd.project.executor.exeCmd
         if self.src.hasSubIntf:
-            yield VivadoTCL.connect_bd_intf_net(src, dst)
+            exe(VivadoTCL.connect_bd_intf_net(src, dst))
         else:
-            yield VivadoTCL.connect_bd_net(src, dst)
+            exe(VivadoTCL.connect_bd_net(src, dst))
 
     @classmethod
-    def createMultipleFromDict(cls, netDict):
+    def createMultipleFromDict(cls, bd: 'VivadoBoardDesign', netDict):
         for src, dst in netDict.items():
             if isinstance(dst, list) or isinstance(dst, tuple):  # if has multiple dst create net for all of them
                 for d in dst:
-                    yield from cls(src, d).create()
+                    cls(bd, src, d).create()
             else:
-                yield from cls(src, dst).create()
+                cls(bd, src, dst).create()

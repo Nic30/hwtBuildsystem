@@ -1,6 +1,7 @@
-from hwtBuildsystem.common.cmdResult import TclCmdResult
-from json.encoder import JSONEncoder
 from copy import copy
+from json.encoder import JSONEncoder
+
+from hwtBuildsystem.common.cmdResult import TclCmdResult
 
 
 class RecordingExecutorEncoder(JSONEncoder):

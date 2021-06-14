@@ -1,5 +1,5 @@
 from hwtBuildsystem.common.tcl import CommonTcl
 
 
-class QuartusTCL(CommonTcl):
+class QuartusProjectTCL(CommonTcl):
     pass

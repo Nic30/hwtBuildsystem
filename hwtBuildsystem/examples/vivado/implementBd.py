@@ -1,42 +1,44 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwtBuildsystem.vivado.api.project import VivadoProject
-from hwtBuildsystem.vivado.examples.createBdProject import populateBd
+from typing import Dict
+
+from hwtBuildsystem.examples.vivado.createBdProject import examplePopulateBd
+from hwtBuildsystem.vivado.api.boardDesign import VivadoBoardDesign
 from hwtBuildsystem.vivado.executor import VivadoExecutor
 from hwtBuildsystem.vivado.partBuilder import XilinxPartBuilder
-from hwtBuildsystem.vivado.xdcGen import PackagePin
+from hwtBuildsystem.vivado.xdcGen import XdcPackagePin
 
 
-def xdcForBd(bd, portMap):
+def xdcForBd(bd: VivadoBoardDesign, portMap: Dict[str, str]):
     for port in bd.ports.values():
         pin = portMap[port.name.lower()]
         assert(isinstance(pin, str))
-        yield PackagePin(port, pin)
+        yield XdcPackagePin(port, pin)
 
 
-def createSampleBdProject(v, tmpDir, part):
+def createSampleBdProject(v: VivadoExecutor, tmpDir: str, part: str):
     p = v.project(tmpDir, "SampleBdProject" + part)
     if p._exists():
         p._remove()
 
-    yield from p.create()
-    yield from p.setPart(part)
+    p.create()
+    p.setPart(part)
 
     bd = p.boardDesign("test1")
-    yield from bd.create()
-    yield from populateBd(bd)
-    yield from bd.mkWrapper()
-    yield from bd.setAsTop()
+    bd.create()
+    examplePopulateBd(bd)
+    bd.mkWrapper()
+    bd.setAsTop()
 
-    yield from p.synthAll()
+    p.synthAll()
     portMap = {
         "portin": "C1",
         "portout": "C2"
     }
 
-    yield from p.addXDCs('pinConstr', xdcForBd(bd, portMap))
-    yield from p.implemAll()
+    p.addConstrainObjects('pinConstr', xdcForBd(bd, portMap))
+    p.implemAll()
 
 
 if __name__ == "__main__":
@@ -45,6 +47,6 @@ if __name__ == "__main__":
     kintex = XilinxPartBuilder(pb.Family.kintex7, pb.Size._160t, pb.Package.ffg676, pb.Speedgrade._2).name()
 
     with VivadoExecutor(logComunication=True) as v:
-        v.process(createSampleBdProject(v, tmpDir, kintex))
+        createSampleBdProject(v, tmpDir, kintex)
         v.openGui()
 
