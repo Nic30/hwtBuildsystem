@@ -47,26 +47,15 @@ def buildUnit(exe: ToolExecutor, unit: Unit, root:str, part:tuple,
     p.setPart(part)
 
     # generate files
-    if isinstance(exe, YosysExecutor):
+    if isinstance(exe, (QuartusExecutor, YosysExecutor)):
         serializer = VerilogSerializer
     else:
         serializer = Vhdl2008Serializer
 
     store_manager = SaveToFilesFlat(serializer, root=os.path.join(p.path, 'src'))
     to_rtl(unit, store_manager=store_manager)
-    hdls = []
-    constrains = []
-    for f in store_manager.files:
-        if f.endswith(".xdc") or f.endswith(".sdc"):
-            constrains.append(f)
-        else:
-            hdls.append(f)
-
-    p.addFiles(hdls)
-
+    p.addFiles(store_manager.files)
     p.setTop(unit._name)
-    for constrain_file in constrains:
-        p.addConstrainFile(constrain_file)
 
     if synthesize:
         p.synthAll()
@@ -134,6 +123,19 @@ def parse_reports(project: SynthesisToolProject):
     print("Bitstream is in file %s" % (report.bitstreamFile))
     return resorces
 
+def store_yosys_report_in_db(db_cursor, build_start:datetime.datetime, project: VivadoProject, component_name: str):
+    db_cursor.execute(f'''
+    CREATE TABLE IF NOT EXISTS yosys_vivado_builds
+        ({SQL_COMMON_BULD_REPORT_COLUMNS:s},
+         lut int, ff int, latch int, bram DECIMAL(10, 2), uram DECIMAL(10, 2), dsp int)''')
+
+    r = parse_reports(project)
+    common = collect_common_build_report_values(component_name, {}, build_start, project)
+    db_cursor.execute(f'''
+        INSERT INTO yosys_vivado_builds
+            VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
+        (*common, r['lut'], r['ff'], r['latch'], r['bram'], r['uram'], r['dsp']),
+    )
 
 def store_vivado_report_in_db(db_cursor, build_start:datetime.datetime, project: VivadoProject, component_name: str):
     db_cursor.execute(f'''
@@ -143,12 +145,11 @@ def store_vivado_report_in_db(db_cursor, build_start:datetime.datetime, project:
 
     r = parse_reports(project)
     common = collect_common_build_report_values(component_name, {}, build_start, project)
-    c.execute(f'''
+    db_cursor.execute(f'''
         INSERT INTO xilinx_vivado_builds
             VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
         (*common, r['lut'], r['ff'], r['latch'], r['bram'], r['uram'], r['dsp']),
     )
-    conn.commit()
 
 
 def store_quartus_report_in_db(db_cursor, build_start:datetime.datetime, project: QuartusProject, component_name: str):
@@ -158,12 +159,11 @@ def store_quartus_report_in_db(db_cursor, build_start:datetime.datetime, project
          alm int, lut int, ff int, latch int, bram DECIMAL(10, 2), uram DECIMAL(10, 2), dsp int)''')
     common = collect_common_build_report_values(component_name, {}, build_start, project)
     r = parse_reports(project)
-    c.execute(f'''
+    db_cursor.execute(f'''
         INSERT INTO intel_quartus_builds
             VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?, ?)''',
         (*common, r['alm'], r['lut'], r['ff'], r['latch'], r['bram'], r['uram'], r['dsp']),
     )
-    conn.commit()
 
 
 if __name__ == "__main__":
@@ -183,19 +183,20 @@ if __name__ == "__main__":
         logComunication = True
 
         start = datetime.datetime.now()
-        # with YosysExecutor(logComunication=logComunication) as executor:
-        #     u = component_constructor()
-        #     # part = ('Intel', "Cyclone V", "5CGXFC7C7F23C8")
-        #     # part = ('Intel', "Arria 10", "10AX048H1F34E1HG")
-        #     part = ('Lattice', 'iCE40', 'up5k', 'sg48')
-        #     project = buildUnit(executor, u, "tmp/yosys", part,
-        #                   synthesize=True,
-        #                   implement=False,
-        #                   writeBitstream=False,
-        #                   # openGui=True,
-        #                   )
-        #     name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
-        #     store_vivado_report_in_db(c, start, project, name)
+        with YosysExecutor(logComunication=logComunication) as executor:
+            u = component_constructor()
+            # part = ('Intel', "Cyclone V", "5CGXFC7C7F23C8")
+            # part = ('Intel', "Arria 10", "10AX048H1F34E1HG")
+            part = ('Lattice', 'iCE40', 'up5k', 'sg48')
+            project = buildUnit(executor, u, "tmp/yosys", part,
+                          synthesize=True,
+                          implement=False,
+                          writeBitstream=False,
+                          # openGui=True,
+                          )
+            name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
+            store_yosys_report_in_db(c, start, project, name)
+            conn.commit()
 
         # with RecordingExecutor(
         #  VivadoExecutor(logComunication=True, workerCnt=1),
@@ -220,7 +221,8 @@ if __name__ == "__main__":
                           # openGui=True,
                           )
             name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
-            store_vivado_report_in_db(c, start, project, name)
+            store_yosys_report_in_db(c, start, project, name)
+            conn.commit()
 
         start = datetime.datetime.now()
         with QuartusExecutor(logComunication=logComunication) as executor:
@@ -235,6 +237,7 @@ if __name__ == "__main__":
                           )
             name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
             store_quartus_report_in_db(c, start, project, name)
+            conn.commit()
         print("All done")
     finally:
         conn.close()
