@@ -156,13 +156,13 @@ def store_quartus_report_in_db(db_cursor, build_start:datetime.datetime, project
     db_cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS intel_quartus_builds
         ({SQL_COMMON_BULD_REPORT_COLUMNS:s},
-         alm int, lut int, ff int, latch int, bram_bits DECIMAL(10, 2), uram DECIMAL(10, 2), dsp int)''')
+         alm int, lut int, ff int, latch int, bram_bits DECIMAL(10, 2), dsp int)''')
     common = collect_common_build_report_values(component_name, {}, build_start, project)
     r = parse_reports(project)
     db_cursor.execute(f'''
         INSERT INTO intel_quartus_builds
-            VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?, ?)''',
-        (*common, r['alm'], r['lut'], r['ff'], r['latch'], r['bram_bits'], r['uram'], r['dsp']),
+            VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
+        (*common, r['alm'], r['lut'], r['ff'], r['latch'], r['bram_bits'], r['dsp']),
     )
 
 
