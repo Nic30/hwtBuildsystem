@@ -88,8 +88,40 @@ class YosysSynthesisLogParser():
         from the tables contained in a report.
         """
         top = { k: v for k, v in self.tables[self.topName]}
-
+        ic40_ffs = [
+                'SB_DFF',
+                'SB_DFFE',
+                'SB_DFFER',
+                'SB_DFFES',
+                'SB_DFFESR',
+                'SB_DFFESS',
+                'SB_DFFN',
+                'SB_DFFNE',
+                'SB_DFFNER',
+                'SB_DFFNES',
+                'SB_DFFNESR',
+                'SB_DFFNESS',
+                'SB_DFFNR',
+                'SB_DFFNS',
+                'SB_DFFNSR',
+                'SB_DFFNSS',
+                'SB_DFFR',
+                'SB_DFFS',
+                'SB_DFFSR',
+                'SB_DFFSS',
+            ]
+        ice40_rams = [
+            'SB_RAM40_4K',
+            'SB_RAM40_4KNR',
+            'SB_RAM40_4KNW',
+            'SB_RAM40_4KNRNW'
+        ]
         return {
             "lut": int(top.get(('Number of cells', 'SB_LUT4'), 0)),
-            'bram': int(top.get(('Number of cells', 'SB_RAM40_4K'), 0)),
+            'ff': sum(int(top.get(('Number of cells', ff), 0)) for ff in ic40_ffs),
+            'bram': sum(int(top.get(('Number of cells', ram), 0)) for ram in ice40_rams),
+            'uram': 0,  # no URAMS on chip
+            'dsp': int(top.get(('Number of cells', 'SB_MAC16'), 0)),
+            'latch': 0,  # the latches do syntetize only to LUT
         }
+
