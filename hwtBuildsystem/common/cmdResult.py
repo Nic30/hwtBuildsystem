@@ -3,12 +3,8 @@ import re
 
 class TclToolErr(Exception):
 
-    def __init__(self, cmdResult):
-        super(TclToolErr, self).__init__()
-        self.cmdResult = cmdResult
-
     def __str__(self):
-        return 'Cmd "%s" caused errors:\n%s' % (self.cmdResult.cmd, str(self.cmdResult.errors))
+        return 'Cmd "%s" caused errors:\n%s' % (self.args[0].cmd, str(self.args[0].errors))
 
 
 class TclCmdResult():
