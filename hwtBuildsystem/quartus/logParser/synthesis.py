@@ -54,13 +54,23 @@ class QuartusSynthesisLogParser(VivadoSynthesisLogParser):
         """
         usage = self.tables["Analysis & Synthesis Resource Usage Summary"]
         i = self.indexByRowNameColumnName
+        latches = self.tables.get("User-Specified and Inferred Latches", None)
+        if latches:
+            m = re.match("Number of user-specified and inferred latches = (\d+)", latches[-1][0])
+            latches = int(m.group(1))
+        else:
+            latches = 0
+
+        try:
+            bram_bits = int(i(usage, "Total block memory bits", "Usage"))
+        except KeyError:
+            bram_bits = 0
 
         return {
             "alm": int(i(usage, "Estimate of Logic utilization (ALMs needed)", "Usage")),
             "lut": int(i(usage, "Combinational ALUT usage for logic", "Usage")),
             "ff": int(i(usage, "Dedicated logic registers", "Usage")),
-            "latch": 0,
-            'bram': 0,
-            'uram': 0,
+            "latch": latches,
+            'bram_bits': bram_bits,
             'dsp': int(i(usage, "Total DSP Blocks", "Usage")),
         }
