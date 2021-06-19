@@ -75,6 +75,7 @@ class QuartusProject(SynthesisToolProject):
             f = str(Path(f).relative_to(self.path))
             if suffix == ".vhd":
                 lib = "work"
+                exe('set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008')
                 exe(f'set_global_assignment -name {t:s} "{f:s}" -hdl_version VHDL_2008 -library {lib:s}')
             else:
                 exe(f'set_global_assignment -name {t:s} "{f:s}"')
