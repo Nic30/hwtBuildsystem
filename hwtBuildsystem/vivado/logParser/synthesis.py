@@ -32,7 +32,7 @@ class VivadoSynthesisLogParser():
         for row in islice(table, 1, None):
             if row[0] == rowName:
                 return row[c_i]
-        raise KeyError("The row with such a name not found", columnName)
+        raise KeyError("The row with such a name not found", rowName)
 
     def parse(self):
         table_name = None
