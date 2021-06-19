@@ -58,7 +58,7 @@ class QuartusProject(SynthesisToolProject):
         exe(f'cd "{self.path:s}"')
         exe(f'project_new {self.name:s} -overwrite')
         if self.executor.workerCnt is not None:
-            exe(f"set_param general.maxThreads {self.workerCnt:d}")
+            exe(f"set_global_assignment -name num_parallel_processors {self.executor.workerCnt:d}")
         exe(f'project_open {self.name:s}')
 
     def addConstrainFiles(self, files):
