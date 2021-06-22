@@ -125,14 +125,14 @@ def parse_reports(project: SynthesisToolProject):
 
 def store_yosys_report_in_db(db_cursor, build_start:datetime.datetime, project: VivadoProject, component_name: str):
     db_cursor.execute(f'''
-    CREATE TABLE IF NOT EXISTS yosys_vivado_builds
+    CREATE TABLE IF NOT EXISTS yosys_builds
         ({SQL_COMMON_BULD_REPORT_COLUMNS:s},
          lut int, ff int, latch int, bram DECIMAL(10, 2), uram DECIMAL(10, 2), dsp int)''')
 
     r = parse_reports(project)
     common = collect_common_build_report_values(component_name, {}, build_start, project)
     db_cursor.execute(f'''
-        INSERT INTO yosys_vivado_builds
+        INSERT INTO yosys_builds
             VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
         (*common, r['lut'], r['ff'], r['latch'], r['bram'], r['uram'], r['dsp']),
     )
