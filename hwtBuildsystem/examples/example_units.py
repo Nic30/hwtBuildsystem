@@ -1,11 +1,14 @@
+from hwt.code import If
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwtBuildsystem.ioConstraints import set_IoPin, set_IoStandard
+from hwtBuildsystem.ioConstraints import ConstrainIo
 from hwtBuildsystem.vivado.xdcGen import XdcIoStandard
-from hwt.hdl.types.bits import Bits
-from hwt.code import If
+from hwtLib.xilinx.platform import XilinxVivadoPlatform
+from hwtBuildsystem.vivado.part import XilinxPart
+from hwtBuildsystem.quartus.part import IntelPart
 
 
 class ExampleTop0(Unit):
@@ -52,13 +55,21 @@ class ExampleTop0(Unit):
             return a
 
         def p(intf, pinMap, ioStd=XdcIoStandard.LVCMOS18):
-            set_IoPin(intf, pinMap)
-            set_IoStandard(intf, ioStd)
+            ConstrainIo(intf, pinMap, ioStd)
 
-        # p(a.data, r("A", 8, 10) + r("A", 12, 15) + ["B9"])
-        # p(a.rd, ["B12", ])
-        # p(a.vld, ["B14", ])
-        #
-        # p(b.data, ["B15", "C9"] + r("C", 11, 12) + ["C14"] + r("D", 8, 10))
-        # p(b.rd, ["D14", ])
-        # p(b.vld, ["E10", ])
+        if isinstance(self._target_platform, XilinxVivadoPlatform):
+            assert self._target_platform.part == XilinxPart(
+                    XilinxPart.Family.kintex7,
+                    XilinxPart.Size._160t,
+                    XilinxPart.Package.ffg676,
+                    XilinxPart.Speedgrade._2)
+            p(a.data, r("A", 8, 10) + r("A", 12, 15) + ["B9"])
+            p(a.rd, ["B12", ])
+            p(a.vld, ["B14", ])
+
+            p(b.data, ["B15", "C9"] + r("C", 11, 12) + ["C14"] + r("D", 8, 10))
+            p(b.rd, ["D14", ])
+            p(b.vld, ["E10", ])
+            raise NotImplementedError("clk, rst_n and ram_port")
+        elif isinstance(self._target_platform, IntelPart):
+            raise NotImplementedError()

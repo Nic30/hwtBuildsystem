@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Optional, Union
 
 from hwtBuildsystem.common.project import SynthesisToolProject
 from hwtBuildsystem.vivado.api import Language, FILE_TYPE
@@ -7,6 +7,7 @@ from hwtBuildsystem.vivado.report import VivadoReport
 from hwtBuildsystem.vivado.api.tcl import VivadoTCL
 import xml.etree.ElementTree as ET
 from hwtBuildsystem.vivado.api.boardDesign import VivadoBoardDesign
+from hwtBuildsystem.vivado.part import XilinxPart
 
 
 class VivadoProject(SynthesisToolProject):
@@ -107,7 +108,13 @@ class VivadoProject(SynthesisToolProject):
                 assert fs.tag == "FileSet"
                 yield fs.attrib["Name"]
 
-    def setPart(self, partName: str):
+    def setPart(self, part: Union[XilinxPart, str]):
+        if isinstance(part, XilinxPart):
+            partName = part.name()
+        else:
+            assert isinstance(part, str), part
+            partName = part
+
         self.part = partName
         exe = self.executor.exeCmd
         exe(VivadoTCL.set_property(self.get(), "part", partName))

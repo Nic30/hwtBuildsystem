@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
-from typing import Tuple
 
 from hwtBuildsystem.common.project import SynthesisToolProject
+from hwtBuildsystem.quartus.part import IntelPart
 from hwtBuildsystem.quartus.report import QuartusReport
 
 
@@ -35,15 +35,14 @@ class QuartusProject(SynthesisToolProject):
         exe(f'package require ::quartus::project')
         exe(f'package require ::quartus::flow')
 
-    def setPart(self, part: Tuple[str, str]):
+    def setPart(self, part: IntelPart):
         """
         :param part: tuple family, part number e.g ("Cyclone", "EP1C12F256C6")
         """
         self.part = part
-        family, device = part
         exe = self.executor.exeCmd
-        exe(f'set_global_assignment -name FAMILY "{family:s}"')
-        exe(f'set_global_assignment -name DEVICE {device:s}')
+        exe(f'set_global_assignment -name FAMILY "{part.family:s}"')
+        exe(f'set_global_assignment -name DEVICE {part.device:s}')
 
     def setTop(self, topName):
         self.top = topName

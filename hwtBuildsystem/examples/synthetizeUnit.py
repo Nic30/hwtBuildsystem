@@ -20,10 +20,12 @@ from hwtBuildsystem.common.project import SynthesisToolProject
 from hwtBuildsystem.examples.example_units import ExampleTop0
 from hwtBuildsystem.quartus.api.project import QuartusProject
 from hwtBuildsystem.quartus.executor import QuartusExecutor
+from hwtBuildsystem.quartus.part import IntelPart
 from hwtBuildsystem.vivado.api.project import VivadoProject
 from hwtBuildsystem.vivado.executor import VivadoExecutor
-from hwtBuildsystem.vivado.partBuilder import XilinxPartBuilder
+from hwtBuildsystem.vivado.part import XilinxPart
 from hwtBuildsystem.yosys.executor import YosysExecutor
+from hwtBuildsystem.yosys.part import LatticePart
 
 
 def buildUnit(exe: ToolExecutor, unit: Unit, root:str, part:tuple,
@@ -123,6 +125,7 @@ def parse_reports(project: SynthesisToolProject):
     print("Bitstream is in file %s" % (report.bitstreamFile))
     return resorces
 
+
 def store_yosys_report_in_db(db_cursor, build_start:datetime.datetime, project: VivadoProject, component_name: str):
     db_cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS yosys_builds
@@ -136,6 +139,7 @@ def store_yosys_report_in_db(db_cursor, build_start:datetime.datetime, project: 
             VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
         (*common, r['lut'], r['ff'], r['latch'], r['bram'], r['uram'], r['dsp']),
     )
+
 
 def store_vivado_report_in_db(db_cursor, build_start:datetime.datetime, project: VivadoProject, component_name: str):
     db_cursor.execute(f'''
@@ -185,9 +189,9 @@ if __name__ == "__main__":
         start = datetime.datetime.now()
         with YosysExecutor(logComunication=logComunication) as executor:
             u = component_constructor()
-            # part = ('Intel', "Cyclone V", "5CGXFC7C7F23C8")
-            # part = ('Intel', "Arria 10", "10AX048H1F34E1HG")
-            part = ('Lattice', 'iCE40', 'up5k', 'sg48')
+            # part = IntelPart("Cyclone V", "5CGXFC7C7F23C8")
+            # part = IntelPart("Arria 10", "10AX048H1F34E1HG")
+            part = LatticePart('iCE40', 'up5k', 'sg48')
             project = buildUnit(executor, u, "tmp/yosys", part,
                           synthesize=True,
                           implement=False,
@@ -208,12 +212,12 @@ if __name__ == "__main__":
         start = datetime.datetime.now()
         with VivadoExecutor(logComunication=logComunication) as executor:
             u = component_constructor()
-            __pb = XilinxPartBuilder
-            part = XilinxPartBuilder(
+            __pb = XilinxPart
+            part = XilinxPart(
                     __pb.Family.kintex7,
                     __pb.Size._160t,
                     __pb.Package.ffg676,
-                    __pb.Speedgrade._2).name()
+                    __pb.Speedgrade._2)
             project = buildUnit(executor, u, "tmp/vivado", part,
                           synthesize=True,
                           implement=False,
@@ -227,8 +231,8 @@ if __name__ == "__main__":
         start = datetime.datetime.now()
         with QuartusExecutor(logComunication=logComunication) as executor:
             u = component_constructor()
-            # part = ("Cyclone V", "5CGXFC7C7F23C8")
-            part = ("Arria 10", "10AX048H1F34E1HG")
+            # part = IntelPart("Cyclone V", "5CGXFC7C7F23C8")
+            part = IntelPart("Arria 10", "10AX048H1F34E1HG")
             project = buildUnit(executor, u, "tmp/quartus", part,
                           synthesize=True,
                           implement=False,

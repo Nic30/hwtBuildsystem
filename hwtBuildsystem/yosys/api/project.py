@@ -1,8 +1,11 @@
 import os
-from typing import Tuple
+from typing import Tuple, Union
 
 from hwtBuildsystem.common.project import SynthesisToolProject
 from hwtBuildsystem.yosys.report import YosysReport
+from hwtBuildsystem.vivado.part import XilinxPart
+from hwtBuildsystem.yosys.part import LatticePart
+from hwtBuildsystem.quartus.part import IntelPart
 
 
 class YosysProject(SynthesisToolProject):
@@ -25,11 +28,11 @@ class YosysProject(SynthesisToolProject):
         self.name = name
         self._report = YosysReport(self.path, self.name, None)
 
-    def setPart(self, part: Tuple[str, str, str]):
+    def setPart(self, part: Union[LatticePart, IntelPart, XilinxPart, Tuple[str, str, str]]):
         """
         :param part: vendor specific tuple
-            ("Intel", "Cyclone", "EP1C12F256C6"),
-            ('Lattice', 'iCE40', 'up5k', 'sg48')
+            IntelPart("Intel", "Cyclone", "EP1C12F256C6"),
+            LaticePart('Lattice', 'iCE40', 'up5k', 'sg48')
         """
         self.part = part
 
@@ -61,46 +64,53 @@ class YosysProject(SynthesisToolProject):
         if part is None:
             cmd = 'synth'
         else:
-            vendor = part[0].lower()
-            default_cmds = {
-                'achronix': 'synth_achronix',  # Acrhonix Speedster22i FPGAs.
-                'gowin': 'synth_gowin',  #  Gowin FPGAs
-                'anlogic': 'synth_anlogic',  #  Anlogic FPGAs
-                'silego': 'synth_greenpak4',  # Silego GreenPAK4 FPGAs
-                'microchip': 'synth_sf2',  # microchip SmartFusion2 and IGLOO2 FPGAs
-            }
-            cmd = default_cmds.get(vendor, None)
+            if isinstance(part, tuple):
+                vendor = part[0].lower()
+                default_cmds = {
+                    'achronix': 'synth_achronix',  # Acrhonix Speedster22i FPGAs.
+                    'gowin': 'synth_gowin',  #  Gowin FPGAs
+                    'anlogic': 'synth_anlogic',  #  Anlogic FPGAs
+                    'silego': 'synth_greenpak4',  # Silego GreenPAK4 FPGAs
+                    'microchip': 'synth_sf2',  # microchip SmartFusion2 and IGLOO2 FPGAs
+                }
+                cmd = default_cmds.get(vendor, None)
+            else:
+                cmd = None
+
             if cmd is None:
-                family = part[1].lower()
-                if vendor == 'lattice':
-                    if family == 'ecp5':
+                if isinstance(part, LatticePart):
+                    if part.family == 'ECP5':
                         cmd = 'synth_ecp5'  # ECP5 FPGAs
-                    elif family == 'ice40':
+                    elif part.family == 'iCE40':
                         cmd = 'synth_ice40'  # iCE40 FPGAs
                     else:
                         raise AssertionError("Unknown part family for Lattice chips (supported: ecp5, ice40)", part)
-                elif vendor == 'intel':
-                    if family == 'easic':
+                elif isinstance(part, IntelPart):
+                    if part.family == 'easic':
                         cmd = 'synth_easic'  # intel eASIC platform
                     else:
                         cmd = 'synth_intel'  # Intel (Altera) FPGAs.
-                elif vendor == 'xilinx':
-                    if family == 'coolrunner2':
+                elif isinstance(part, XilinxPart):
+                    if part.family == 'coolrunner2':
                         cmd = 'synth_coolrunner2'  # synthesis for Xilinx Coolrunner-II CPLDs
                     else:
                         cmd = 'synth_xilinx'  # synthesis for Xilinx FPGAs
                 else:
                     raise AssertionError("Unknown part vendor", part)
+
         assert self.top, "Top entity must be specified first"
         out_json = os.path.join(self.path, self.top + '.json')
         r = exe(cmd + f' -top {self.top:s} -json "{out_json:s}"')
         self._report.setSynthLog(r.resultText)
 
     def implemAll(self):
-        raise NotImplementedError()
+        raise NotImplementedError("Need to implement for specifyc place&route backend")
 
     def writeBitstream(self):
-        raise NotImplementedError()
+        raise NotImplementedError("Need to implement for specifyc bitstream packer backend")
 
     def close(self):
+        """
+        The project was just virtual in the first place, no closing required.
+        """
         pass

@@ -1,4 +1,7 @@
-class XilinxPartBuilder():
+class XilinxPart():
+    """
+    Xilinx FPGA model name specification
+    """
 
     class Package():
         cflva2104 = 'cflva2104'
@@ -325,5 +328,23 @@ class XilinxPartBuilder():
         self.speedgrade = speedgrade
         self.grade = grade
 
+    def as_tuple(self):
+        return (
+            self.family,
+            self.size,
+            self.package,
+            self.speedgrade,
+            self.grade,
+        )
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.as_tuple() == other.as_tuple()
+
+    def __hash__(self):
+        return hash(self.as_tuple())
+
     def name(self):
         return "x" + self.grade + self.family + self.size + self.package + self.speedgrade
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__:s} {self.grade:s} {self.family:s} {self.size:s} {self.package} {self.speedgrade:s}>"

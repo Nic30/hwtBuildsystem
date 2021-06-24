@@ -6,7 +6,7 @@ from typing import Dict
 from hwtBuildsystem.examples.vivado.createBdProject import examplePopulateBd
 from hwtBuildsystem.vivado.api.boardDesign import VivadoBoardDesign
 from hwtBuildsystem.vivado.executor import VivadoExecutor
-from hwtBuildsystem.vivado.partBuilder import XilinxPartBuilder
+from hwtBuildsystem.vivado.part import XilinxPart
 from hwtBuildsystem.vivado.xdcGen import XdcPackagePin
 
 
@@ -43,8 +43,8 @@ def createSampleBdProject(v: VivadoExecutor, tmpDir: str, part: str):
 
 if __name__ == "__main__":
     tmpDir = 'tmp/'
-    pb = XilinxPartBuilder
-    kintex = XilinxPartBuilder(pb.Family.kintex7, pb.Size._160t, pb.Package.ffg676, pb.Speedgrade._2).name()
+    pb = XilinxPart
+    kintex = XilinxPart(pb.Family.kintex7, pb.Size._160t, pb.Package.ffg676, pb.Speedgrade._2)
 
     with VivadoExecutor(logComunication=True) as v:
         createSampleBdProject(v, tmpDir, kintex)

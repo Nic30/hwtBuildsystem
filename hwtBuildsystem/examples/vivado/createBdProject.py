@@ -5,7 +5,7 @@ from hwtBuildsystem.vivado.api.boardDesign import VivadoBoardDesign
 from hwtBuildsystem.vivado.api.net import VivadoBoardDesignNet
 from hwtBuildsystem.vivado.api.port import VivadoBoardDesignPort
 from hwtBuildsystem.vivado.executor import VivadoExecutor
-from hwtBuildsystem.vivado.partBuilder import XilinxPartBuilder
+from hwtBuildsystem.vivado.part import XilinxPart
 from ipCorePackager.constants import DIRECTION
 
 
@@ -20,8 +20,8 @@ def examplePopulateBd(bd: VivadoBoardDesign):
 
 
 def createSampleBdProject(v: VivadoExecutor, tmpDir):
-    pb = XilinxPartBuilder
-    part = XilinxPartBuilder(pb.Family.kintex7, pb.Size._160t, pb.Package.ffg676, pb.Speedgrade._2).name()
+    pb = XilinxPart
+    part = XilinxPart(pb.Family.kintex7, pb.Size._160t, pb.Package.ffg676, pb.Speedgrade._2)
 
     p = v.project(tmpDir, "SampleBdProject")
     if p._exists():
