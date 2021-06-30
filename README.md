@@ -10,7 +10,7 @@ Note that the coverage is does treats the vendor tool depndent tests as not cove
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 
-This python package is a library with utils for interaction with the vendor tools. It also contains a predefined compilation scripts which can be used to build and analyze the HWT based designs.
+This python package is a library of utils for interaction with the vendor tools. It also contains a predefined compilation scripts which can be used to build and analyze the HWT based designs.
 
 The library does contain an executors and log parsers which are working with specific tool and the abstract project which allows you to write universal "compile" scripts.
 
