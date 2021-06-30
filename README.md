@@ -6,7 +6,7 @@
 [![Python version](https://img.shields.io/pypi/pyversions/hwtBuildsystem.svg)](https://img.shields.io/pypi/pyversions/hwtBuildsystem.svg)
 [![Join the chat at https://gitter.im/hwt-community/community](https://badges.gitter.im/hwt-community/community.svg)](https://gitter.im/hwt-community/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Note that the coverage is does treats the vendor tool depndent tests as not covered because we can not install vendor tools in the CI.
+Note that the coverage does treat the vendor tool dependent tests as not covered because we can not install vendor tools in the CI.
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 
