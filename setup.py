@@ -11,6 +11,7 @@ setup(name='hwtBuildsystem',
       author='Michal Orsak',
       author_email='michal.o.socials@gmail.com',
       install_requires=[
+        'pexpect', # CLI app io
         'hwt', # core library of HWToolkit
       ],
       license='MIT',
