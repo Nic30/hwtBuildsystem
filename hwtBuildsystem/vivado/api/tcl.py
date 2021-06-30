@@ -179,6 +179,7 @@ class VivadoProjectOpsTCL():
 
     @staticmethod
     def launch_runs(names: List[str], workerCnt=None, to_step=None, quiet=False):
+        assert names
         params = []
         if to_step is not None:
             params.append(f"-to_step {to_step:s}")
@@ -187,7 +188,10 @@ class VivadoProjectOpsTCL():
         if quiet:
             params.append("-quiet")
 
-        return "launch_runs %s %s" % (' '.join(names), ' '.join(params))
+        if params:
+            return "launch_runs %s %s" % (' '.join(names), ' '.join(params))
+        else:
+            return "launch_runs %s" % (' '.join(names))
 
     @staticmethod
     def run(jobName, workerCnt=None):
@@ -270,7 +274,6 @@ class VivadoTCL(CommonTcl, VivadoFSOpsTCL, VivadoBDOpsTCL, VivadoProjectOpsTCL, 
     @staticmethod
     def start_gui():
         return "start_gui"
-
 
     class sim():
 
