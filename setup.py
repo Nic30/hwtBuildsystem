@@ -9,7 +9,7 @@ setup(name='hwtBuildsystem',
       description='buildsystem for for HWToolkit (hwt, the fpga devel. library)',
       url='https://github.com/Nic30/hwtBuildsystem',
       author='Michal Orsak',
-      author_email='michal.o.socials@gmail.com',
+      author_email='Nic30original@gmail.com',
       install_requires=[
         'pexpect', # CLI app io
         'hwt', # core library of HWToolkit
