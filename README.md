@@ -1,4 +1,4 @@
-# hwtBuildsystem [WIP]
+# hwtBuildsystem
 [![CircleCI](https://circleci.com/gh/Nic30/hwtBuildsystem.svg?style=svg)](https://circleci.com/gh/Nic30/hwtBuildsystem)
 [![PyPI version](https://badge.fury.io/py/hwtBuildsystem.svg)](http://badge.fury.io/py/hwtBuildsystem)
 [![Coverage Status](https://coveralls.io/repos/github/Nic30/hwtBuildsystem/badge.svg?branch=master)](https://coveralls.io/github/Nic30/hwtBuildsystem?branch=master)
@@ -6,7 +6,15 @@
 [![Python version](https://img.shields.io/pypi/pyversions/hwtBuildsystem.svg)](https://img.shields.io/pypi/pyversions/hwtBuildsystem.svg)
 [![Join the chat at https://gitter.im/hwt-community/community](https://badges.gitter.im/hwt-community/community.svg)](https://gitter.im/hwt-community/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-buildsystem for for HWToolkit (hwt) (fpga devel. tool), Vivado, Modelsim, Quartus, Yosys etc.
+Note that the coverage does treat the vendor tool dependent tests as not covered because we can not install vendor tools in the CI.
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+This python package is a library of utils for interaction with the vendor tools. It also contains a predefined compilation scripts which can be used to build and analyze the HWT based designs.
+
+The library does contain an executors and log parsers which are working with specific tool and the abstract project which allows you to write universal "compile" scripts.
+
+Currently supports Xilinx Vivado, Modelsim, Intel Quartus, Yosys.
 
 
 # Similar software
