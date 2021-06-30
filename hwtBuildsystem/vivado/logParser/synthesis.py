@@ -92,7 +92,7 @@ class VivadoSynthesisLogParser():
 
 
 if __name__ == "__main__":
-    with open("../examples/tmp/SimpleUnitAxiStreamTop/SimpleUnitAxiStreamTop.runs/synth_1/SimpleUnitAxiStreamTop_utilization_synth.rpt") as f:
+    with open("../examples/tmp/ExampleTop0/ExampleTop0.runs/synth_1/ExampleTop0_utilization_synth.rpt") as f:
         rp = VivadoSynthesisLogParser(f.read())
         rp.parse()
         for table_name, table in rp.tables.items():

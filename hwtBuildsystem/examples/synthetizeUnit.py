@@ -18,6 +18,7 @@ from hwt.synthesizer.utils import to_rtl
 from hwtBuildsystem.common.executor import ToolExecutor
 from hwtBuildsystem.common.project import SynthesisToolProject
 from hwtBuildsystem.examples.example_units import ExampleTop0
+from hwtBuildsystem.fakeTool.recordingExecutor import RecordingExecutor
 from hwtBuildsystem.quartus.api.project import QuartusProject
 from hwtBuildsystem.quartus.executor import QuartusExecutor
 from hwtBuildsystem.quartus.part import IntelPart
@@ -49,7 +50,8 @@ def buildUnit(exe: ToolExecutor, unit: Unit, root:str, part:tuple,
     p.setPart(part)
 
     # generate files
-    if isinstance(exe, (QuartusExecutor, YosysExecutor)):
+    if isinstance(exe, (QuartusExecutor, YosysExecutor)) or (isinstance(exe, RecordingExecutor) and
+                                                             isinstance(exe.executor, (QuartusExecutor, YosysExecutor))):
         serializer = VerilogSerializer
     else:
         serializer = Vhdl2008Serializer
@@ -174,7 +176,7 @@ if __name__ == "__main__":
     """
     :note: An example of usage
     """
-
+    TEST_TRACES = os.path.join(os.path.dirname(__file__), '..', '..', 'tests')
     # from hwtBuildsystem.fakeTool.recordingExecutor import RecordingExecutor
     # from hwtBuildsystem.fakeTool.replayingExecutor import ReplayingExecutor
 
@@ -187,7 +189,11 @@ if __name__ == "__main__":
         logComunication = True
 
         start = datetime.datetime.now()
-        with YosysExecutor(logComunication=logComunication) as executor:
+        with RecordingExecutor(YosysExecutor(logComunication=logComunication),
+                               [],
+                               os.path.join(TEST_TRACES, "ExampleTop0_synth_trace.yosys_ice40.json")
+                               ) as executor:
+        # with YosysExecutor(logComunication=logComunication) as executor:
             u = component_constructor()
             # part = IntelPart("Cyclone V", "5CGXFC7C7F23C8")
             # part = IntelPart("Arria 10", "10AX048H1F34E1HG")
@@ -202,15 +208,15 @@ if __name__ == "__main__":
             store_yosys_report_in_db(c, start, project, name)
             conn.commit()
 
-        # with RecordingExecutor(
-        #  VivadoExecutor(logComunication=True, workerCnt=1),
-        #  ['tmp/SimpleUnitAxiStreamTop/SimpleUnitAxiStreamTop.xpr',
-        #   'tmp/SimpleUnitAxiStreamTop/SimpleUnitAxiStreamTop.runs/synth_1/SimpleUnitAxiStreamTop_utilization_synth.rpt'],
-        #  "../../../tests/SimpleUnitAxiStreamTop_synth_trace.json",
-        #  removeAllTracedFilesFirst=True) as v:
-        # with ReplayingExecutor(os.path.join(os.path.dirname(__file__), "../../../tests/SimpleUnitAxiStreamTop_synth_trace.json")) as v:
         start = datetime.datetime.now()
-        with VivadoExecutor(logComunication=logComunication) as executor:
+        with RecordingExecutor(
+            VivadoExecutor(logComunication=logComunication),
+            ['tmp/vivado/ExampleTop0/ExampleTop0.xpr',
+             'tmp/vivado/ExampleTop0/ExampleTop0.runs/synth_1/ExampleTop0_utilization_synth.rpt'],
+             os.path.join(TEST_TRACES, "ExampleTop0_synth_trace.vivado_kintex7.json"),
+            removeAllTracedFilesFirst=True) as executor:
+        # with ReplayingExecutor(os.path.join(os.path.dirname(__file__), "../../../tests/ExampleTop0_synth_trace.json")) as v:
+        #with VivadoExecutor(logComunication=logComunication) as executor:
             u = component_constructor()
             __pb = XilinxPart
             part = XilinxPart(
@@ -225,11 +231,15 @@ if __name__ == "__main__":
                           # openGui=True,
                           )
             name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
-            store_yosys_report_in_db(c, start, project, name)
+            store_vivado_report_in_db(c, start, project, name)
             conn.commit()
 
         start = datetime.datetime.now()
-        with QuartusExecutor(logComunication=logComunication) as executor:
+        with RecordingExecutor(QuartusExecutor(logComunication=logComunication),
+                               ['tmp/quartus/ExampleTop0/ExampleTop0.map.rpt'],
+                               os.path.join(TEST_TRACES, "ExampleTop0_synth_trace.quartus_arria10.json"),
+                               removeAllTracedFilesFirst=True) as executor:
+        #with QuartusExecutor(logComunication=logComunication) as executor:
             u = component_constructor()
             # part = IntelPart("Cyclone V", "5CGXFC7C7F23C8")
             part = IntelPart("Arria 10", "10AX048H1F34E1HG")

@@ -16,11 +16,11 @@ class RecordingExecutorEncoder(JSONEncoder):
 
 
 def RecordingExecutorJSON_decode_history(o):
-    assert isinstance(o, dict), o
-    return {
-        int(k): RecordingExecutorJSON_decode(v)
-        for k, v in o.items()
-    }
+    assert isinstance(o, list), o
+    return [
+        RecordingExecutorJSON_decode(v)
+        for v in o
+    ]
 
 
 def RecordingExecutorJSON_decode(o):
@@ -56,6 +56,7 @@ class FileOp():
     """
     An container of file operation for command history.
     """
+
     def __init__(self, mode, text):
         assert mode in ('w', 'a', 'd')
         self.mode = mode

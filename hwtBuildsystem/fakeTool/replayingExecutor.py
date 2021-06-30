@@ -1,3 +1,4 @@
+from collections import deque
 import importlib
 import json
 import os
@@ -21,11 +22,10 @@ class ReplayingExecutor(ToolExecutor):
         with open(traceFile) as fp:
             if pwd is None:
                 pwd = os.getcwd()
-            j = fp.read().replace(RecordingExecutor.PWD_VAR_NAME, pwd)
+            j = fp.read().replace(RecordingExecutor.VAR_NAME_PWD, pwd)
         rec = json.loads(j)
-        self.history = RecordingExecutorJSON_decode_history(rec['history'])
+        self.history = deque(RecordingExecutorJSON_decode_history(rec['history']))
         self.initialFilesToWatch = RecordingExecutorJSON_decode(rec["filesToWatch"])
-        self.cmdI = 0
         execMod, execCls = rec['executorCls']
         self.executorCls = getattr(importlib.import_module(execMod), execCls)
         self.workerCnt = rec['workerCnt']
@@ -37,7 +37,8 @@ class ReplayingExecutor(ToolExecutor):
         pass
 
     def exeCmd(self, cmd) -> TclCmdResult:
-        res, fileOps = self.history[self.cmdI][cmd]
+        res, fileOps = self.history.popleft()
+        assert res.cmd == cmd, (res, cmd)
         for f, op in fileOps:
             if op.mode == 'd':
                 os.remove(f)
@@ -46,7 +47,6 @@ class ReplayingExecutor(ToolExecutor):
                 with open(f, op.mode) as _f:
                     _f.write(op.text)
 
-        self.cmdI += 1
         return res
 
     def project(self, root, name:str) -> SynthesisToolProject:
