@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(name='hwtBuildsystem',
       version='0.1',
-      description='buildsystem for for HWToolkit (fpga devel. tools)',
+      description='buildsystem for for HWToolkit (hwt, the fpga devel. library)',
       url='https://github.com/Nic30/hwtBuildsystem',
       author='Michal Orsak',
       author_email='michal.o.socials@gmail.com',
