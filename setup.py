@@ -19,7 +19,7 @@ setup(name='hwtBuildsystem',
       author_email='Nic30original@gmail.com',
       install_requires=[
         'pexpect', # CLI app io
-        'hwt', # core library of HWToolkit
+        'hwt>=3.8', # core library of HWToolkit
       ],
       license='MIT',
       packages = find_packages(),
