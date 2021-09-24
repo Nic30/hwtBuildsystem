@@ -60,7 +60,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'hwt'
+project = 'hwtAxiPerfTester'
 copyright = '2020-%d, Michal Orsak' % datetime.now().year
 author = 'Michal Orsak'
 
