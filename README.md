@@ -30,3 +30,7 @@ Currently supports Xilinx Vivado, Modelsim, Intel Quartus, Yosys.
 * [python-quartus](https://github.com/CatherineH/python-quartus)
 * [quartustcl](https://github.com/agrif/quartustcl)
 * [pySerdes](https://github.com/jeepx5/pySerdes)
+
+# Vendor tool tutorials
+
+* https://hwjedi.wordpress.com/2017/02/09/vivado-non-project-mode-part-iii-phys-opt-looping/
