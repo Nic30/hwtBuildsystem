@@ -11,7 +11,7 @@ from hwt.synthesizer.utils import to_rtl
 from hwtLib.examples.hierarchy.multiConfigUnit import MultiConfigUnitWrapper
 
 
-def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
+def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None, out_folder:Optional[str] = None, unit_name:Optional[str] = None):
     """
     :param unitCls: unit class or anything callable which produces instance of Unit
     :param args: list of CLI arguments, if None the CLI args of this python execution are used
@@ -28,7 +28,6 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
 
     args = parser.parse_args(args=args)
 
-    assert int(args.generics) + int(args.files) + int(args.component) == 1, ("Mus use exacly one cli option (--files/--generics/--componnet)")
     if(args.component == True):
         print(defInstance._getDefaultName())
         return
@@ -42,20 +41,25 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
         for p in defInstance._params:
             v = getattr(args, p._name)
             if(len(v) > curIndex):
-                p.set_value(v[curIndex])
+                setattr(curInst, p._name, v[curIndex])
             if(len(v) > curIndex + 1):
                 has_next = True
         unitConfigs.append(curInst)
 
-    unitFile = inspect.getfile(defInstance.__class__)
-    compName = os.path.splitext(os.path.basename(unitFile))[0]
-    rtl_dir_path = os.path.join(os.path.dirname(os.path.realpath(unitFile)),
-                                compName)
+    if(unit_name is None):
+        unitFile = inspect.getfile(defInstance.__class__)
+        unit_name = os.path.splitext(os.path.basename(unitFile))[0]
+        
+    if(out_folder is None):
+        out_folder = os.getcwd()
+        
+    rtl_dir_path = os.path.join(out_folder,
+                                unit_name)
     serializers = {
         "vhdl2008": Vhdl2008Serializer,
         "sv2012": VerilogSerializer,
     }
-    store_man = SaveToSingleFiles(serializers[args.language], rtl_dir_path, name=compName)
+    store_man = SaveToSingleFiles(serializers[args.language], rtl_dir_path, name=unit_name)
     multiConfUnit = MultiConfigUnitWrapper(unitConfigs)
     to_rtl(multiConfUnit, store_manager=store_man)
 
