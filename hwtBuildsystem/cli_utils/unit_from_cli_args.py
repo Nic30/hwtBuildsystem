@@ -16,8 +16,6 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
     :param unitCls: unit class or anything callable which produces instance of Unit
     :param args: list of CLI arguments, if None the CLI args of this python execution are used
     """
-
-    # Todo: Addwrapper for multigeneric configuration
     defInstance = unitCls()
 
     parser = argparse.ArgumentParser('Generate hwt component files from specification of possible parameter/generic values')
