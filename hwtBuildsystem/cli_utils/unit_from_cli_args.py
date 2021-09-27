@@ -34,7 +34,7 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
     parser.add_argument('-g', '--generics', action='store_true', help='Print component generics')
     parser.add_argument('-c', '--component', action='store_true', help='Print component name')
     for p in param_unit._params:
-        parser.add_argument(f'--{p._name}', default=p.get_value(), nargs='+')
+        parser.add_argument(f'--{p._name}', default=[p.get_value(), ], nargs='+')
 
     args = parser.parse_args(args=args)
 
