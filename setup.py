@@ -21,6 +21,9 @@ setup(name='hwtBuildsystem',
         'pexpect', # CLI app io
         'hwt>=3.8', # core library of HWToolkit
       ],
+      test_requires=[
+         "hwtLib>=2.9",
+      ],
       license='MIT',
       packages = find_packages(),
       zip_safe=False)

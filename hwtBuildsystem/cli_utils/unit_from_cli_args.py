@@ -10,7 +10,7 @@ from hwt.serializer.store_manager import SaveToSingleFiles
 from hwt.serializer.verilog import VerilogSerializer
 from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.synthesizer.utils import to_rtl
-from hwtLib.examples.hierarchy.multiConfigUnit import MultiConfigUnitWrapper
+from hwtBuildsystem.hwt.multiConfigUnit import MultiConfigUnitWrapper
 
 
 def unit_from_cli_args(unitCls: Type,

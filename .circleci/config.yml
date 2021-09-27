@@ -11,6 +11,9 @@ jobs:
     steps:
       - checkout
       # - python/load-cache
+      - py/install-package-git:
+          cwd: ..
+          url: https://github.com/Nic30/hwtLib
       - py/install-setup-py
       # - python/save-cache
       - py/test-and-coverage
