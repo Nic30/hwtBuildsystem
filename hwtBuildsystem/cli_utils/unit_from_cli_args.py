@@ -6,7 +6,7 @@ from typing import Type, Optional, List
 
 from hwt.serializer.store_manager import SaveToSingleFiles
 from hwt.serializer.vhdl import Vhdl2008Serializer as HwtVhdlSerializer
-from hwt.synthesizer.utils import to_rtl, synthesised
+from hwt.synthesizer.utils import to_rtl
 from hwtLib.examples.hierarchy.multiConfigUnit import MultiConfigUnitWrapper
 
 
@@ -25,21 +25,18 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
                                 compName)
     store_man = SaveToSingleFiles(HwtVhdlSerializer, rtl_dir_path, name=compName)
 
-    param_unit = MultiConfigUnitWrapper([unitCls()])
-    synthesised(param_unit)
-
     parser = argparse.ArgumentParser('Vivado integrator for hwt component')
     parser.add_argument('-f', '--files', action='store_true', help='Print all source absolute file paths')
     parser.add_argument('-g', '--generics', action='store_true', help='Print component generics')
     parser.add_argument('-c', '--component', action='store_true', help='Print component name')
-    for p in param_unit._params:
+    for p in defInstance._params:
         parser.add_argument(f'--{p._name}', default=[p.get_value(), ], nargs='+')
 
     args = parser.parse_args(args=args)
 
     assert int(args.generics) + int(args.files) + int(args.component) == 1, ("Mus use exacly one cli option (--files/--generics/--componnet)")
     if(args.component == True):
-        print(param_unit._getDefaultName())
+        print(defInstance._getDefaultName())
         return
 
     unitConfigs = []
@@ -48,7 +45,7 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
         has_next = False
         curIndex = len(unitConfigs)
         curInst = unitCls()
-        for p in param_unit._params:
+        for p in defInstance._params:
             v = getattr(args, p._name)
             if(len(v) > curIndex):
                 p.set_value(v[curIndex])
@@ -60,7 +57,7 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
     to_rtl(multiConfUnit, store_manager=store_man)
 
     if(args.generics == True):
-        print(' '.join([p.hdl_name for p in param_unit._params]))
+        print(' '.join([p.hdl_name for p in defInstance._params]))
         return
 
     if(args.files == True):
