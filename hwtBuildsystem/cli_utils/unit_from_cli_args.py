@@ -5,9 +5,10 @@ import os
 from typing import Type, Optional, List
 
 from hwt.serializer.store_manager import SaveToSingleFiles
-from hwt.serializer.vhdl import Vhdl2008Serializer as HwtVhdlSerializer
+from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.synthesizer.utils import to_rtl
 from hwtLib.examples.hierarchy.multiConfigUnit import MultiConfigUnitWrapper
+from hwt.serializer.verilog import VerilogSerializer
 
 
 def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
@@ -19,16 +20,11 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
     # Todo: Addwrapper for multigeneric configuration
     defInstance = unitCls()
 
-    unitFile = inspect.getfile(defInstance.__class__)
-    compName = os.path.splitext(os.path.basename(unitFile))[0]
-    rtl_dir_path = os.path.join(os.path.dirname(os.path.realpath(unitFile)),
-                                compName)
-    store_man = SaveToSingleFiles(HwtVhdlSerializer, rtl_dir_path, name=compName)
-
     parser = argparse.ArgumentParser('Generate hwt component files from specification of possible parameter/generic values')
     parser.add_argument('-f', '--files', action='store_true', help='Print all source absolute file paths')
     parser.add_argument('-g', '--generics', action='store_true', help='Print component generics')
     parser.add_argument('-c', '--component', action='store_true', help='Print component name')
+    parser.add_argument('-l', '--language', type=str, choices=["vhdl2008", "sv2012"], default="vhdl2008", help='Specifies target language')
     for p in defInstance._params:
         parser.add_argument(f'--{p._name}', default=[p.get_value(), ], nargs='+')
 
@@ -53,6 +49,15 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
                 has_next = True
         unitConfigs.append(curInst)
 
+    unitFile = inspect.getfile(defInstance.__class__)
+    compName = os.path.splitext(os.path.basename(unitFile))[0]
+    rtl_dir_path = os.path.join(os.path.dirname(os.path.realpath(unitFile)),
+                                compName)
+    serializers = {
+        "vhdl2008": Vhdl2008Serializer,
+        "sv2012": VerilogSerializer,
+    }
+    store_man = SaveToSingleFiles(serializers[args.language], rtl_dir_path, name=compName)
     multiConfUnit = MultiConfigUnitWrapper(unitConfigs)
     to_rtl(multiConfUnit, store_manager=store_man)
 
