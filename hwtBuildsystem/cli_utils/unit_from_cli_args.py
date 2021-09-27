@@ -57,7 +57,7 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
     to_rtl(multiConfUnit, store_manager=store_man)
 
     if(args.generics == True):
-        print(' '.join([p.hdl_name for p in defInstance._params]))
+        print(' '.join([p._name for p in defInstance._params]))
         return
 
     if(args.files == True):
