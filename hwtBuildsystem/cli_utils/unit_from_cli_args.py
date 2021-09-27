@@ -25,7 +25,7 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
                                 compName)
     store_man = SaveToSingleFiles(HwtVhdlSerializer, rtl_dir_path, name=compName)
 
-    parser = argparse.ArgumentParser('Vivado integrator for hwt component')
+    parser = argparse.ArgumentParser('Generate hwt component files from specification of possible parameter/generic values')
     parser.add_argument('-f', '--files', action='store_true', help='Print all source absolute file paths')
     parser.add_argument('-g', '--generics', action='store_true', help='Print component generics')
     parser.add_argument('-c', '--component', action='store_true', help='Print component name')
