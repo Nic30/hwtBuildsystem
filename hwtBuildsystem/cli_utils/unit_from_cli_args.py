@@ -6,7 +6,7 @@ from typing import Type, Optional, List
 
 from hwt.serializer.store_manager import SaveToSingleFiles
 from hwt.serializer.vhdl import Vhdl2008Serializer as HwtVhdlSerializer
-from hwt.synthesizer.utils import to_rtl
+from hwt.synthesizer.utils import to_rtl, synthesised
 from hwtLib.examples.hierarchy.multiConfigUnit import MultiConfigUnitWrapper
 
 
@@ -18,7 +18,6 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
 
     # Todo: Addwrapper for multigeneric configuration
     defInstance = unitCls()
-    defUnit = MultiConfigUnitWrapper([defInstance])
 
     unitFile = inspect.getfile(defInstance.__class__)
     compName = os.path.splitext(os.path.basename(unitFile))[0]
@@ -27,7 +26,7 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
     store_man = SaveToSingleFiles(HwtVhdlSerializer, rtl_dir_path, name=compName)
 
     param_unit = MultiConfigUnitWrapper([unitCls()])
-    to_rtl(param_unit, store_manager=store_man)
+    synthesised(param_unit)
 
     parser = argparse.ArgumentParser('Vivado integrator for hwt component')
     parser.add_argument('-f', '--files', action='store_true', help='Print all source absolute file paths')
@@ -61,7 +60,7 @@ def unit_from_cli_args(unitCls: Type, args:Optional[List[str]]=None):
     to_rtl(multiConfUnit, store_manager=store_man)
 
     if(args.generics == True):
-        print(' '.join([p.hdl_name for p in defUnit._params]))
+        print(' '.join([p.hdl_name for p in param_unit._params]))
         return
 
     if(args.files == True):
