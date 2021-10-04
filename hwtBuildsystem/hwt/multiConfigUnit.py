@@ -16,8 +16,8 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from ipCorePackager.constants import INTF_DIRECTION, DIRECTION
 from hwt.synthesizer.utils import synthesised
+from ipCorePackager.constants import INTF_DIRECTION, DIRECTION
 
 
 def reduce_ternary(cond_val_pairs: List[Tuple[Union[HValue, RtlSignal], Union[HValue, RtlSignal]]], default: Union[HValue, RtlSignal]):
