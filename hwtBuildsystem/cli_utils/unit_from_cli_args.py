@@ -12,6 +12,7 @@ from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import to_rtl
 from hwtBuildsystem.hwt.multiConfigUnit import MultiConfigUnitWrapper
+from hdlConvertorAst.translate.common.name_scope import LanguageKeyword
 
 
 def _parse_configs(defInstance: Unit, args: List[str], default_params: List[Dict[str, object]]):
@@ -52,16 +53,33 @@ def _parse_configs(defInstance: Unit, args: List[str], default_params: List[Dict
             seenConfigs.add(c)
 
 
+def ban_names_in_serializer(serializer_cls: Type, reserved_ids: Optional[List[str]]) -> Type:
+    if reserved_ids is None:
+        return serializer_cls
+    else:
+
+        class ToHdlAst(serializer_cls.TO_HDL_AST):
+            _keywords_dict = dict(serializer_cls.TO_HDL_AST._keywords_dict,
+                                  **{name: LanguageKeyword() for name in reserved_ids})
+
+        class Serializer(serializer_cls):
+            TO_HDL_AST = ToHdlAst
+
+        return Serializer
+
+
 def unit_from_cli_args(unitCls: Type,
                        default_params: List[Dict[str, object]],
                        args:Optional[List[str]]=None,
                        out_folder:Optional[str]=None,
                        unit_name:Optional[str]=None,
+                       reserved_ids:Optional[List[str]]=None,
                        stdout:StringIO=None):
     """
     :param unitCls: unit class or anything callable which produces instance of Unit
     :param default_params: list of default parameters for a component to resolve which parameters/generics affect which port width
     :param args: list of CLI arguments, if None the CLI args of this python execution are used
+    :param reserved_ids: optional list of identifier names which should not be used in generated code (used to prevent name collisions)
     """
     defInstance = unitCls()
     if stdout is None:
@@ -103,8 +121,8 @@ def unit_from_cli_args(unitCls: Type,
     rtl_dir_path = os.path.join(out_folder,
                                 unit_name)
     serializers = {
-        "vhdl2008": Vhdl2008Serializer,
-        "sv2012": VerilogSerializer,
+        "vhdl2008": ban_names_in_serializer(Vhdl2008Serializer, reserved_ids),
+        "sv2012": ban_names_in_serializer(VerilogSerializer, reserved_ids),
     }
     store_man = SaveToSingleFiles(serializers[args.language], rtl_dir_path, name=unit_name)
     multiConfUnit = MultiConfigUnitWrapper(unitVariants)
