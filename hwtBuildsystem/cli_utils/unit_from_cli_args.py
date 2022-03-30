@@ -6,13 +6,13 @@ import os
 import sys
 from typing import Type, Optional, List, Dict
 
+from hdlConvertorAst.translate.common.name_scope import LanguageKeyword
 from hwt.serializer.store_manager import SaveToSingleFiles
 from hwt.serializer.verilog import VerilogSerializer
 from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import to_rtl
 from hwtBuildsystem.hwt.multiConfigUnit import MultiConfigUnitWrapper
-from hdlConvertorAst.translate.common.name_scope import LanguageKeyword
 
 
 def _parse_configs(defInstance: Unit, args: List[str], default_params: List[Dict[str, object]]):
@@ -22,10 +22,10 @@ def _parse_configs(defInstance: Unit, args: List[str], default_params: List[Dict
         if configs_cnt is None:
             configs_cnt = len(v)
         else:
-            assert configs_cnt == len(v), ("All paramenters must have same number of values,"
+            assert configs_cnt == len(v), ("All parameters must have same number of values,"
                                            " because each item represents a value for specific combination")
     assert configs_cnt is not None, ("At least some parameters needs to be specified,"
-        " otherwise you can instanciate component directly and you do not need this function")
+        " otherwise you can instantiate component directly and you do not need this function")
 
     unitConfigs = []
     for i in range(configs_cnt):

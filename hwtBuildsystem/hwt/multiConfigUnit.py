@@ -236,7 +236,7 @@ class MultiConfigUnitWrapper(Unit):
         for p in param_signals:
             p._const = True
             p.hidden = False
-        # instanciate component variants in if generate statement
+        # instantiate component variants in if generate statement
         ns = store_manager.name_scope
         as_hdl_ast = self._store_manager.as_hdl_ast
         if_generate_cases = []
@@ -267,7 +267,7 @@ class MultiConfigUnitWrapper(Unit):
 
                 ci.port_map.append(p)
 
-            # create if generate instanciation condition
+            # create if generate instantiation condition
             param_cmp_expr = BIT.from_py(1)
             assert len(u._params) == len(param_signals)
             for p, p_sig in zip(sorted(u._params, key=lambda x: x.hdl_name), param_signals):
