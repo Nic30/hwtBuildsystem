@@ -27,9 +27,11 @@ from hwtBuildsystem.vivado.executor import VivadoExecutor
 from hwtBuildsystem.vivado.part import XilinxPart
 from hwtBuildsystem.yosys.executor import YosysExecutor
 from hwtBuildsystem.yosys.part import LatticePart
+from hwt.synthesizer.dummyPlatform import DummyPlatform
 
 
 def buildUnit(exe: ToolExecutor, unit: Unit, root:str, part:tuple,
+              targetPlatform=DummyPlatform(),
               synthesize:bool=True, implement:bool=True, writeBitstream:bool=True,
               openGui:bool=False) -> SynthesisToolProject:
     """
@@ -57,7 +59,7 @@ def buildUnit(exe: ToolExecutor, unit: Unit, root:str, part:tuple,
         serializer = Vhdl2008Serializer
 
     store_manager = SaveToFilesFlat(serializer, root=os.path.join(p.path, 'src'))
-    to_rtl(unit, store_manager=store_manager)
+    to_rtl(unit, store_manager=store_manager, target_platform=targetPlatform)
     p.addFiles(store_manager.files)
     p.setTop(unit._name)
 
@@ -188,25 +190,25 @@ if __name__ == "__main__":
         c = conn.cursor()
         logComunication = True
 
-        start = datetime.datetime.now()
-        with RecordingExecutor(YosysExecutor(logComunication=logComunication),
-                               [],
-                               os.path.join(TEST_TRACES, "ExampleTop0_synth_trace.yosys_ice40.json")
-                               ) as executor:
-        # with YosysExecutor(logComunication=logComunication) as executor:
-            u = component_constructor()
-            # part = IntelPart("Cyclone V", "5CGXFC7C7F23C8")
-            # part = IntelPart("Arria 10", "10AX048H1F34E1HG")
-            part = LatticePart('iCE40', 'up5k', 'sg48')
-            project = buildUnit(executor, u, "tmp/yosys", part,
-                          synthesize=True,
-                          implement=False,
-                          writeBitstream=False,
-                          # openGui=True,
-                          )
-            name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
-            store_yosys_report_in_db(c, start, project, name)
-            conn.commit()
+        # start = datetime.datetime.now()
+        # with RecordingExecutor(YosysExecutor(logComunication=logComunication),
+        #                       [],
+        #                       os.path.join(TEST_TRACES, "ExampleTop0_synth_trace.yosys_ice40.json")
+        #                       ) as executor:
+        # # with YosysExecutor(logComunication=logComunication) as executor:
+        #    u = component_constructor()
+        #    # part = IntelPart("Cyclone V", "5CGXFC7C7F23C8")
+        #    # part = IntelPart("Arria 10", "10AX048H1F34E1HG")
+        #    part = LatticePart('iCE40', 'up5k', 'sg48')
+        #    project = buildUnit(executor, u, "tmp/yosys", part,
+        #                  synthesize=True,
+        #                  implement=False,
+        #                  writeBitstream=False,
+        #                  # openGui=True,
+        #                  )
+        #    name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
+        #    store_yosys_report_in_db(c, start, project, name)
+        #    conn.commit()
 
         start = datetime.datetime.now()
         with RecordingExecutor(
@@ -216,7 +218,7 @@ if __name__ == "__main__":
              os.path.join(TEST_TRACES, "ExampleTop0_synth_trace.vivado_kintex7.json"),
             removeAllTracedFilesFirst=True) as executor:
         # with ReplayingExecutor(os.path.join(os.path.dirname(__file__), "../../../tests/ExampleTop0_synth_trace.json")) as v:
-        #with VivadoExecutor(logComunication=logComunication) as executor:
+        # with VivadoExecutor(logComunication=logComunication) as executor:
             u = component_constructor()
             __pb = XilinxPart
             part = XilinxPart(
@@ -234,24 +236,24 @@ if __name__ == "__main__":
             store_vivado_report_in_db(c, start, project, name)
             conn.commit()
 
-        start = datetime.datetime.now()
-        with RecordingExecutor(QuartusExecutor(logComunication=logComunication),
-                               ['tmp/quartus/ExampleTop0/ExampleTop0.map.rpt'],
-                               os.path.join(TEST_TRACES, "ExampleTop0_synth_trace.quartus_arria10.json"),
-                               removeAllTracedFilesFirst=True) as executor:
-        #with QuartusExecutor(logComunication=logComunication) as executor:
-            u = component_constructor()
-            # part = IntelPart("Cyclone V", "5CGXFC7C7F23C8")
-            part = IntelPart("Arria 10", "10AX048H1F34E1HG")
-            project = buildUnit(executor, u, "tmp/quartus", part,
-                          synthesize=True,
-                          implement=False,
-                          writeBitstream=False,
-                          # openGui=True,
-                          )
-            name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
-            store_quartus_report_in_db(c, start, project, name)
-            conn.commit()
+        # start = datetime.datetime.now()
+        # with RecordingExecutor(QuartusExecutor(logComunication=logComunication),
+        #                       ['tmp/quartus/ExampleTop0/ExampleTop0.map.rpt'],
+        #                       os.path.join(TEST_TRACES, "ExampleTop0_synth_trace.quartus_arria10.json"),
+        #                       removeAllTracedFilesFirst=True) as executor:
+        # #with QuartusExecutor(logComunication=logComunication) as executor:
+        #    u = component_constructor()
+        #    # part = IntelPart("Cyclone V", "5CGXFC7C7F23C8")
+        #    part = IntelPart("Arria 10", "10AX048H1F34E1HG")
+        #    project = buildUnit(executor, u, "tmp/quartus", part,
+        #                  synthesize=True,
+        #                  implement=False,
+        #                  writeBitstream=False,
+        #                  # openGui=True,
+        #                  )
+        #    name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
+        #    store_quartus_report_in_db(c, start, project, name)
+        #    conn.commit()
         print("All done")
     finally:
         conn.close()
