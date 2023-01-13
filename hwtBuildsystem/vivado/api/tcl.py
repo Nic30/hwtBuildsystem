@@ -74,7 +74,7 @@ class VivadoBDOpsTCL():
 
     @staticmethod
     def get_bd_intf_ports(names: List[str]):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     @staticmethod
     def get_bd_pins(names):
