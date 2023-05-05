@@ -105,7 +105,7 @@ class CLIUtilsTC(TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(CLIUtilsTC))
+    testLoader = unittest.TestLoader()
+    suite = testLoader.loadTestsFromTestCase(CLIUtilsTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

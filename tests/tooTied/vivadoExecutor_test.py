@@ -49,8 +49,8 @@ class VivadoExecutorTC(TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(VivadoExecutorTC("test_VivadoErrorValidMsg"))
-    suite.addTest(unittest.makeSuite(VivadoExecutorTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([VivadoExecutorTC("test_VivadoErrorValidMsg")])
+    suite = testLoader.loadTestsFromTestCase(VivadoExecutorTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

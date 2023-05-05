@@ -43,8 +43,8 @@ class QuartusSynthLogParserTC(TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(VivadoSynthLogParserTC("test_VivadoErrorValidMsg"))
-    suite.addTest(unittest.makeSuite(QuartusSynthLogParserTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([QuartusSynthLogParserTC("test_VivadoErrorValidMsg")])
+    suite = testLoader.loadTestsFromTestCase(QuartusSynthLogParserTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

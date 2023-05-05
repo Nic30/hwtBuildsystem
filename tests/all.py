@@ -16,10 +16,10 @@ ALL_TCs = [
 ]
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(VivadoSynthLogParserTC("test_VivadoErrorValidMsg"))
-    for tc in ALL_TCs:
-        suite.addTest(unittest.makeSuite(tc))
+    loader = unittest.TestLoader()
+    loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in ALL_TCs]
+    suite = unittest.TestSuite(loadedTcs)
+
     runner = unittest.TextTestRunner(verbosity=3)
     res = runner.run(suite)
 

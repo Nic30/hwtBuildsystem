@@ -40,8 +40,8 @@ class YosysSynthLogParserTC(TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    # suite.addTest(YosysSynthLogParserTC("test_VivadoErrorValidMsg"))
-    suite.addTest(unittest.makeSuite(YosysSynthLogParserTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([YosysSynthLogParserTC("test_VivadoErrorValidMsg")])
+    suite = testLoader.loadTestsFromTestCase(YosysSynthLogParserTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

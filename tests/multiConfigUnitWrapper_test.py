@@ -107,8 +107,8 @@ class MultiConfigUnitWrapperTC(BaseSerializationTC):
 
 if __name__ == "__main__":
     import unittest
-    suite = unittest.TestSuite()
-    # suite.addTest(MultiConfigUnitWrapperTC("test_Axi4Lite"))
-    suite.addTest(unittest.makeSuite(MultiConfigUnitWrapperTC))
+    testLoader = unittest.TestLoader()
+    # suite = unittest.TestSuite([MultiConfigUnitWrapperTC("test_Axi4Lite")])
+    suite = testLoader.loadTestsFromTestCase(MultiConfigUnitWrapperTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
