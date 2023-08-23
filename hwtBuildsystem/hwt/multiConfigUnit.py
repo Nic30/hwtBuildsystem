@@ -38,10 +38,10 @@ def reduce_ternary(cond_val_pairs: List[Tuple[Union[HValue, RtlSignal], Union[HV
 class MultiConfigUnitWrapper(Unit):
     """
     Class which creates wrapper around multiple unit instances,
-    the implementation is choosen based on generic/parameter values in HDL
+    the implementation is chosen based on generic/parameter values in HDL
 
     :attention: This is meant to be used for top component only, because it is useless
-        for hwt design and it is usefull only for integration of statically build
+        for hwt design and it is useful only for integration of statically build
         component in to VHDL/Verilog
     """
 
@@ -179,7 +179,7 @@ class MultiConfigUnitWrapper(Unit):
                 # 0 == t_width0 + t_width1 - n*(p0 + p1) - 2c
                 # c == (t_width0 + t_width1 - n*(p0 + p1) ) //2
                 # n has to be int, 0 < n <= t_width0/p0
-                # n is something like base size of port which is multipled by parameter
+                # n is something like base size of port which is multiplied by parameter
                 # we searching n for which we can resolve c
                 found_nc = None
                 for n in range(1, t_width0 // p0 + 1):
@@ -258,7 +258,7 @@ class MultiConfigUnitWrapper(Unit):
                 o = p.getOuterSig()
 
                 # can not connect directly to parent port because type is different
-                # but need to connect to something with the same nme
+                # but need to connect to something with the same name
                 if o is p.src:
                     p.src = p.dst
                 else:
