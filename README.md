@@ -20,6 +20,7 @@ Currently supports Xilinx Vivado, Modelsim, Intel Quartus, Yosys.
 # Similar software
 
 * [edalize](https://github.com/olofk/edalize)
+* [chipyard](https://github.com/ucb-bar/chipyard)
 * [hdl-make](https://www.ohwr.org/projects/hdl-make)
 * [IPBB](https://github.com/ipbus/ipbb)
 * [midas](https://github.com/ucb-bar/midas)
