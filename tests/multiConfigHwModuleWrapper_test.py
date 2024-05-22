@@ -12,10 +12,10 @@ from tests.base_serialization_TC import BaseSerializationTC
 
 class EmptyAxiLite(EmptyHwModule):
 
-    def _config(self) -> None:
-        Axi4Lite._config(self)
+    def hwConfig(self) -> None:
+        Axi4Lite.hwConfig(self)
 
-    def _declr(self) -> None:
+    def hwDeclr(self) -> None:
         with self._hwParamsShared():
             self.bus = Axi4Lite()
 
@@ -56,8 +56,8 @@ class MultiConfigHwModuleWrapperTC(BaseSerializationTC):
 
         class SimpleHwModuleWithParamWithIrrelevantParam(SimpleHwModuleWithHwParam):
 
-            def _config(self):
-                SimpleHwModuleWithHwParam._config(self)
+            def hwConfig(self):
+                SimpleHwModuleWithHwParam.hwConfig(self)
                 self.IRELEVANT_PARAM = HwParam(10)
 
         m0 = SimpleHwModuleWithParamWithIrrelevantParam()

@@ -6,6 +6,7 @@ from hwt.hwParam import HwParam
 from hwt.hwModule import HwModule
 from hwtBuildsystem.ioConstraints import ConstrainIo
 from hwtBuildsystem.vivado.xdcGen import XdcIoStandard
+from hwt.pyUtils.typingFuture import override
 # from hwtBuildsystem.vivado.part import XilinxPart
 # from hwtBuildsystem.quartus.part import IntelPart
 
@@ -15,10 +16,12 @@ class ExampleTop0(HwModule):
     Lorem Ipsum componet to have something to compile
     """
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.DATA_WIDTH = HwParam(2)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         addClkRstn(self)
         with self._hwParamsShared():
             self.a = HwIODataRdVld()
@@ -28,7 +31,8 @@ class ExampleTop0(HwModule):
         r.ADDR_WIDTH = 10
         r.DATA_WIDTH = 8
 
-    def _impl(self):
+    @override
+    def hwImpl(self):
         a, b = self.a, self.b
         vld = self._reg("vld_delayed", def_val=0)
         vld(a.vld)

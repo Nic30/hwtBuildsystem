@@ -8,21 +8,23 @@ import unittest
 from unittest.case import TestCase
 
 from hwt.hwIOs.std import HwIOVectSignal
-from hwtLib.abstract.emptyHwModule import EmptyHwModule
 from hwt.hwParam import HwParam
+from hwt.pyUtils.typingFuture import override
 from hwtBuildsystem.cli_utils.hwModule_from_cli_args import hwModule_from_cli_args
-
+from hwtLib.abstract.emptyHwModule import EmptyHwModule
 
 
 class ParamEmptyHwModule(EmptyHwModule):
     DEFAULT_ARGS = [{"ADDR_WIDTH": 8, "DATA_WIDTH":32},
                     {"ADDR_WIDTH": 16, "DATA_WIDTH":32}]
 
-    def _config(self):
+    @override
+    def hwConfig(self):
         self.ADDR_WIDTH = HwParam(8)
         self.DATA_WIDTH = HwParam(32)
 
-    def _declr(self):
+    @override
+    def hwDeclr(self):
         self.addr = HwIOVectSignal(self.ADDR_WIDTH)
         self.data = HwIOVectSignal(self.DATA_WIDTH)
 

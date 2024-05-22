@@ -82,7 +82,7 @@ class MultiConfigHwModuleWrapper(HwModule):
 
         ei = self._ctx.hwIOs
         for hwIO in self._hwIOs:
-            self._loadInterface(hwIO, True)
+            self._loadHwIODeclarations(hwIO, True)
             assert hwIO._isExtern
             hwIO._signalsForHwIO(self._ctx, ei,
                                    self._store_manager.name_scope,
@@ -310,7 +310,7 @@ class MultiConfigHwModuleWrapper(HwModule):
         store_manager:"StoreManager", add_param_asserts=False):
         return HwModule._to_rtl(self, target_platform, store_manager, add_param_asserts=add_param_asserts)
 
-    def _impl(self):
+    def hwImpl(self):
         assert self._parent is None, "should be used only for top instances"
         self._ctx.create_HdlModuleDef = self.create_HdlModuleDef
         self.possible_variants = HObjList(self._possible_variants)
