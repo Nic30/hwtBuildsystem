@@ -6,7 +6,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    .. hwt-autodoc::
 --    
-ENTITY SimpleHwModuleWithParam_0 IS
+ENTITY SimpleHwModuleWithHwParam_0 IS
     GENERIC(
         DATA_WIDTH : INTEGER := 2
     );
@@ -16,7 +16,7 @@ ENTITY SimpleHwModuleWithParam_0 IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF SimpleHwModuleWithParam_0 IS
+ARCHITECTURE rtl OF SimpleHwModuleWithHwParam_0 IS
 BEGIN
     b <= a;
     ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY failure;
@@ -29,7 +29,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    .. hwt-autodoc::
 --    
-ENTITY SimpleHwModuleWithParam_1 IS
+ENTITY SimpleHwModuleWithHwParam_1 IS
     GENERIC(
         DATA_WIDTH : INTEGER := 3
     );
@@ -39,7 +39,7 @@ ENTITY SimpleHwModuleWithParam_1 IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF SimpleHwModuleWithParam_1 IS
+ARCHITECTURE rtl OF SimpleHwModuleWithHwParam_1 IS
 BEGIN
     b <= a;
     ASSERT DATA_WIDTH = 3 REPORT "Generated only for this value" SEVERITY failure;
@@ -52,7 +52,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    .. hwt-autodoc::
 --    
-ENTITY SimpleHwModuleWithParam IS
+ENTITY SimpleHwModuleWithHwParam IS
     GENERIC(
         DATA_WIDTH : INTEGER := 2
     );
@@ -62,13 +62,13 @@ ENTITY SimpleHwModuleWithParam IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF SimpleHwModuleWithParam IS
+ARCHITECTURE rtl OF SimpleHwModuleWithHwParam IS
     --
     --    Simple parametrized module.
     --
     --    .. hwt-autodoc::
     --    
-    COMPONENT SimpleHwModuleWithParam_0 IS
+    COMPONENT SimpleHwModuleWithHwParam_0 IS
         GENERIC(
             DATA_WIDTH : INTEGER := 2
         );
@@ -82,7 +82,7 @@ ARCHITECTURE rtl OF SimpleHwModuleWithParam IS
     --
     --    .. hwt-autodoc::
     --    
-    COMPONENT SimpleHwModuleWithParam_1 IS
+    COMPONENT SimpleHwModuleWithHwParam_1 IS
         GENERIC(
             DATA_WIDTH : INTEGER := 3
         );
@@ -93,14 +93,14 @@ ARCHITECTURE rtl OF SimpleHwModuleWithParam IS
     END COMPONENT;
 BEGIN
     implementation_select: IF DATA_WIDTH = 2 GENERATE
-        possible_variants_0_inst: SimpleHwModuleWithParam_0 GENERIC MAP(
+        possible_variants_0_inst: SimpleHwModuleWithHwParam_0 GENERIC MAP(
             DATA_WIDTH => 2
         ) PORT MAP(
             a => a,
             b => b
         );
     ELSIF DATA_WIDTH = 3 GENERATE
-        possible_variants_1_inst: SimpleHwModuleWithParam_1 GENERIC MAP(
+        possible_variants_1_inst: SimpleHwModuleWithHwParam_1 GENERIC MAP(
             DATA_WIDTH => 3
         ) PORT MAP(
             a => a,

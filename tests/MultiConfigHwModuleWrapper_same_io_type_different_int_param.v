@@ -3,7 +3,7 @@
 //
 //    .. hwt-autodoc::
 //    
-module SimpleHwModuleWithParam_0 #(
+module SimpleHwModuleWithHwParam_0 #(
     parameter DATA_WIDTH = 2
 ) (
     input wire[1:0] a,
@@ -20,7 +20,7 @@ endmodule
 //
 //    .. hwt-autodoc::
 //    
-module SimpleHwModuleWithParam_1 #(
+module SimpleHwModuleWithHwParam_1 #(
     parameter DATA_WIDTH = 3
 ) (
     input wire[2:0] a,
@@ -37,21 +37,21 @@ endmodule
 //
 //    .. hwt-autodoc::
 //    
-module SimpleHwModuleWithParam #(
+module SimpleHwModuleWithHwParam #(
     parameter DATA_WIDTH = 2
 ) (
     input wire[DATA_WIDTH - 1:0] a,
     output wire[DATA_WIDTH - 1:0] b
 );
     generate if (DATA_WIDTH == 32'h2)
-        SimpleHwModuleWithParam_0 #(
+        SimpleHwModuleWithHwParam_0 #(
             .DATA_WIDTH(2)
         ) possible_variants_0_inst (
             .a(a),
             .b(b)
         );
     else if (DATA_WIDTH == 32'h3)
-        SimpleHwModuleWithParam_1 #(
+        SimpleHwModuleWithHwParam_1 #(
             .DATA_WIDTH(3)
         ) possible_variants_1_inst (
             .a(a),

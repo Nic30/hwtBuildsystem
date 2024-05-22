@@ -46,6 +46,7 @@ class BaseSerializationTC(SimTestCase):
         assert self.__FILE__ is not None, "This should be set on child class"
         THIS_DIR = os.path.dirname(os.path.realpath(self.__FILE__))
         fn = os.path.join(THIS_DIR, file_name)
+        # print(s)
         # with open(fn, "w") as f:
         #     f.write(s)
         with open(fn) as f:

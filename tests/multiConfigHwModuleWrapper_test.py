@@ -108,7 +108,7 @@ class MultiConfigHwModuleWrapperTC(BaseSerializationTC):
 if __name__ == "__main__":
     import unittest
     testLoader = unittest.TestLoader()
-    # suite = unittest.TestSuite([MultiConfigHwModuleWrapperTC("test_Axi4Lite")])
+    # suite = unittest.TestSuite([MultiConfigHwModuleWrapperTC("test_3x_same_io_type_different_int_param_vhdl")])
     suite = testLoader.loadTestsFromTestCase(MultiConfigHwModuleWrapperTC)
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

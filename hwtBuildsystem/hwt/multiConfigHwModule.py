@@ -63,10 +63,10 @@ class MultiConfigHwModuleWrapper(HwModule):
             hdl_val = p.get_hdl_value()
             v = HdlIdDef()
             v.origin = p
-            v.name = p._hdl_name = ns.checked_name(p._name, p)
+            v.name = p._name = ns.checked_name(p._name, p)
             v.type = hdl_val._dtype
             v.value = hdl_val
-            self._ctx.ent.params.append(v)
+            self._ctx.hwModDec.params.append(v)
 
         for hwIO in self.possible_variants[0]._hwIOs:
             # clone interface
@@ -100,7 +100,7 @@ class MultiConfigHwModuleWrapper(HwModule):
     def _collectPortTypeVariants(self) -> List[Tuple[HdlPortItem, Dict[Tuple[HwParam, HConst], List[HdlType]]]]:
         res = []
         param_variants = [hwParamsToValTuple(subMod) for subMod in self._subHwModules]
-        for parent_port, port_variants in zip(self._ctx.ent.ports, zip(*(subMod._ctx.ent.ports for subMod in self._subHwModules))):
+        for parent_port, port_variants in zip(self._ctx.hwModDec.ports, zip(*(subMod._ctx.hwModDec.ports for subMod in self._subHwModules))):
             param_val_to_t = {}
             for port_variant, params in zip(port_variants, param_variants):
                 assert port_variant.name == parent_port.name, (port_variant.name, parent_port.name)
@@ -108,7 +108,7 @@ class MultiConfigHwModuleWrapper(HwModule):
                 assert len(params) == len(self._hwParams), (params, self._hwParams)
                 params = params._asdict()
                 for p in self._hwParams:
-                    p_val = params[p._hdl_name]
+                    p_val = params[p._name]
                     types = param_val_to_t.setdefault((p, p_val), SetList())
                     types.append(t)
 
@@ -120,7 +120,7 @@ class MultiConfigHwModuleWrapper(HwModule):
                                        port_type_variants: List[Tuple[HdlPortItem, Dict[Tuple[HwParam, HConst], List[HdlType]]]],
                                        param_signals: List[RtlSignal]):
         updated_type_ids = set()
-        param_sig_by_name = {p.name: p for p in param_signals}
+        param_sig_by_name = {p._name: p for p in param_signals}
         param_value_domain = {}
         for parent_port, param_val_to_t in port_type_variants:
             for (param, param_value), port_types in param_val_to_t.items():
@@ -203,7 +203,7 @@ class MultiConfigHwModuleWrapper(HwModule):
                 default_width = None
                 for t, p_vals in sorted(type_to_param_values.items(), key=lambda x: x[0].bit_length()):
                     cond = And(
-                        *(param_sig_by_name[p._hdl_name]._eq(p_val)
+                        *(param_sig_by_name[p._name]._eq(p_val)
                         for p, p_val in p_vals if p in params_used)
                     )
                     w = t.bit_length()
@@ -221,14 +221,14 @@ class MultiConfigHwModuleWrapper(HwModule):
                             store_manager: "StoreManager"):
         ctx = self._ctx
         mdef = HdlModuleDef()
-        mdef.dec = ctx.ent
-        mdef.module_name = HdlValueId(ctx.ent.name, obj=ctx.ent)
+        mdef.dec = ctx.hwModDec
+        mdef.module_name = HdlValueId(ctx.hwModDec.name, obj=ctx.hwModDec)
         mdef.name = "rtl"
 
         # constant signals which represents the param/generic values
         param_signals = [
-            ctx.sig(p._hdl_name, p.get_hdl_type(), def_val=p.get_hdl_value())
-            for p in sorted(self._hwParams, key=lambda x: x._hdl_name)
+            ctx.sig(p._name, p.get_hdl_type(), def_val=p.get_hdl_value())
+            for p in sorted(self._hwParams, key=lambda x: x._name)
         ]
         # rewrite ports to use generic/params of this entity/module
         port_type_variants = self._collectPortTypeVariants()
@@ -244,17 +244,17 @@ class MultiConfigHwModuleWrapper(HwModule):
             # create instance
             ci = HdlCompInst()
             ci.origin = subMod
-            ci.module_name = HdlValueId(subMod._ctx.ent.name, obj=subMod._ctx.ent)
+            ci.module_name = HdlValueId(subMod._ctx.hwModDec.name, obj=subMod._ctx.hwModDec)
             ci.name = HdlValueId(ns.checked_name(subMod._name + "_inst", ci), obj=subMod)
-            e = subMod._ctx.ent
+            e = subMod._ctx.hwModDec
 
             ci.param_map.extend(e.params)
             # connect ports
-            assert len(e.ports) == len(ctx.ent.ports)
-            for p, parent_port in zip(e.ports, ctx.ent.ports):
+            assert len(e.ports) == len(ctx.hwModDec.ports)
+            for p, parent_port in zip(e.ports, ctx.hwModDec.ports):
                 i = p.getInternSig()
                 parent_port_sig = parent_port.getInternSig()
-                assert i.name == parent_port_sig.name
+                assert i._name == parent_port_sig._name
                 o = p.getOuterSig()
 
                 # can not connect directly to parent port because type is different
@@ -270,8 +270,8 @@ class MultiConfigHwModuleWrapper(HwModule):
             # create if generate instantiation condition
             param_cmp_expr = BIT.from_py(1)
             assert len(subMod._hwParams) == len(param_signals)
-            for p, p_sig in zip(sorted(subMod._hwParams, key=lambda x: x._hdl_name), param_signals):
-                assert p._hdl_name == p_sig.name, (p._hdl_name, p_sig.name)
+            for p, p_sig in zip(sorted(subMod._hwParams, key=lambda x: x._name), param_signals):
+                assert p._name == p_sig._name, (p._name, p_sig._name)
                 param_cmp_expr = param_cmp_expr & p_sig._eq(p.get_hdl_value())
 
             # add case if generate statement
@@ -295,14 +295,14 @@ class MultiConfigHwModuleWrapper(HwModule):
             "The component was generated for this generic/params combination")
 
         mdef.objs.append(if_generate)
-        for p in ctx.ent.ports:
+        for p in ctx.hwModDec.ports:
             s = p.getInternSig()
             if p.direction != DIRECTION.IN:
                 s.drivers.append(if_generate)
             else:
                 s.endpoints.append(if_generate)
 
-        ctx.arch = mdef
+        ctx.hwModDef = mdef
         return mdef
 
     @internal
