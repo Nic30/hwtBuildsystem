@@ -1,9 +1,9 @@
 //
-//    Simple parametrized unit.
+//    Simple parametrized module.
 //
 //    .. hwt-autodoc::
 //    
-module SimpleUnitWithParam_0 #(
+module SimpleHwModuleWithParam_0 #(
     parameter DATA_WIDTH = 2
 ) (
     input wire[1:0] a,
@@ -16,11 +16,11 @@ module SimpleUnitWithParam_0 #(
 
 endmodule
 //
-//    Simple parametrized unit.
+//    Simple parametrized module.
 //
 //    .. hwt-autodoc::
 //    
-module SimpleUnitWithParam_1 #(
+module SimpleHwModuleWithParam_1 #(
     parameter DATA_WIDTH = 3
 ) (
     input wire[2:0] a,
@@ -33,25 +33,25 @@ module SimpleUnitWithParam_1 #(
 
 endmodule
 //
-//    Simple parametrized unit.
+//    Simple parametrized module.
 //
 //    .. hwt-autodoc::
 //    
-module SimpleUnitWithParam #(
+module SimpleHwModuleWithParam #(
     parameter DATA_WIDTH = 2
 ) (
     input wire[DATA_WIDTH - 1:0] a,
     output wire[DATA_WIDTH - 1:0] b
 );
     generate if (DATA_WIDTH == 32'h2)
-        SimpleUnitWithParam_0 #(
+        SimpleHwModuleWithParam_0 #(
             .DATA_WIDTH(2)
         ) possible_variants_0_inst (
             .a(a),
             .b(b)
         );
     else if (DATA_WIDTH == 32'h3)
-        SimpleUnitWithParam_1 #(
+        SimpleHwModuleWithParam_1 #(
             .DATA_WIDTH(3)
         ) possible_variants_1_inst (
             .a(a),

@@ -8,19 +8,19 @@ from hwt.doc_markers import internal
 from hwt.hdl.portItem import HdlPortItem
 from hwt.hdl.types.defs import BIT, INT
 from hwt.hdl.types.hdlType import HdlType
-from hwt.hdl.value import HValue
-from hwt.pyUtils.uniqList import UniqList
-from hwt.serializer.mode import paramsToValTuple
+from hwt.hdl.const import HConst
+from hwt.pyUtils.setList import SetList
+from hwt.serializer.mode import hwParamsToValTuple
 from hwt.synthesizer.dummyPlatform import DummyPlatform
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.param import Param
+from hwt.hObjList import HObjList
+from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import synthesised
+from hwt.hwModule import HwModule
+from hwt.synth import synthesised
 from ipCorePackager.constants import INTF_DIRECTION, DIRECTION
 
 
-def reduce_ternary(cond_val_pairs: List[Tuple[Union[HValue, RtlSignal], Union[HValue, RtlSignal]]], default: Union[HValue, RtlSignal]):
+def reduce_ternary(cond_val_pairs: List[Tuple[Union[HConst, RtlSignal], Union[HConst, RtlSignal]]], default: Union[HConst, RtlSignal]):
     """
     .. code-block:: python
 
@@ -35,7 +35,7 @@ def reduce_ternary(cond_val_pairs: List[Tuple[Union[HValue, RtlSignal], Union[HV
     return res
 
 
-class MultiConfigUnitWrapper(Unit):
+class MultiConfigHwModuleWrapper(HwModule):
     """
     Class which creates wrapper around multiple unit instances,
     the implementation is chosen based on generic/parameter values in HDL
@@ -45,46 +45,46 @@ class MultiConfigUnitWrapper(Unit):
         component in to VHDL/Verilog
     """
 
-    def __init__(self, possible_variants: List[Unit]):
+    def __init__(self, possible_variants: List[HwModule]):
         assert possible_variants
         self._possible_variants = possible_variants
-        super(MultiConfigUnitWrapper, self).__init__()
+        super(MultiConfigHwModuleWrapper, self).__init__()
 
     def _copyParamsAndInterfaces(self):
         # note that the parameters are not added to HdlModuleDef (VHDL entity, Verilog module header)
         # as it was already build
-        for p in self._possible_variants[0]._params:
-            myP = Param(p.get_value())
+        for p in self._possible_variants[0]._hwParams:
+            myP = HwParam(p.get_value())
             self._registerParameter(p._name, myP)
             myP.set_value(p.get_value())
 
         ns = self._store_manager.name_scope
-        for p in sorted(self._params, key=lambda x: x._name):
+        for p in sorted(self._hwParams, key=lambda x: x._name):
             hdl_val = p.get_hdl_value()
             v = HdlIdDef()
             v.origin = p
-            v.name = p.hdl_name = ns.checked_name(p._name, p)
+            v.name = p._hdl_name = ns.checked_name(p._name, p)
             v.type = hdl_val._dtype
             v.value = hdl_val
             self._ctx.ent.params.append(v)
 
-        for intf in self.possible_variants[0]._interfaces:
+        for hwIO in self.possible_variants[0]._hwIOs:
             # clone interface
-            myIntf = copy(intf)
-            if hasattr(myIntf, "_dtype"):
-                myIntf._dtype = copy(myIntf._dtype)
+            myHwIO = copy(hwIO)
+            if hasattr(myHwIO, "_dtype"):
+                myHwIO._dtype = copy(myHwIO._dtype)
             # sub-interfaces are not instantiated yet
-            # myIntf._direction = intf._direction
-            myIntf._direction = INTF_DIRECTION.opposite(intf._direction)
+            # myHwIO._direction = hwIO._direction
+            myHwIO._direction = INTF_DIRECTION.opposite(hwIO._direction)
 
-            self._registerInterface(intf._name, myIntf)
-            object.__setattr__(self, intf._name, myIntf)
+            self._registerHwIO(hwIO._name, myHwIO)
+            object.__setattr__(self, hwIO._name, myHwIO)
 
-        ei = self._ctx.interfaces
-        for i in self._interfaces:
-            self._loadInterface(i, True)
-            assert i._isExtern
-            i._signalsForInterface(self._ctx, ei,
+        ei = self._ctx.hwIOs
+        for hwIO in self._hwIOs:
+            self._loadInterface(hwIO, True)
+            assert hwIO._isExtern
+            hwIO._signalsForHwIO(self._ctx, ei,
                                    self._store_manager.name_scope,
                                    reverse_dir=True)
 
@@ -97,19 +97,19 @@ class MultiConfigUnitWrapper(Unit):
     def _checkCompInstances(self):
         pass
 
-    def _collectPortTypeVariants(self) -> List[Tuple[HdlPortItem, Dict[Tuple[Param, HValue], List[HdlType]]]]:
+    def _collectPortTypeVariants(self) -> List[Tuple[HdlPortItem, Dict[Tuple[HwParam, HConst], List[HdlType]]]]:
         res = []
-        param_variants = [paramsToValTuple(u) for u in self._units]
-        for parent_port, port_variants in zip(self._ctx.ent.ports, zip(*(u._ctx.ent.ports for u in self._units))):
+        param_variants = [hwParamsToValTuple(subMod) for subMod in self._subHwModules]
+        for parent_port, port_variants in zip(self._ctx.ent.ports, zip(*(subMod._ctx.ent.ports for subMod in self._subHwModules))):
             param_val_to_t = {}
             for port_variant, params in zip(port_variants, param_variants):
                 assert port_variant.name == parent_port.name, (port_variant.name, parent_port.name)
                 t = port_variant._dtype
-                assert len(params) == len(self._params), (params, self._params)
+                assert len(params) == len(self._hwParams), (params, self._hwParams)
                 params = params._asdict()
-                for p in self._params:
-                    p_val = params[p.hdl_name]
-                    types = param_val_to_t.setdefault((p, p_val), UniqList())
+                for p in self._hwParams:
+                    p_val = params[p._hdl_name]
+                    types = param_val_to_t.setdefault((p, p_val), SetList())
                     types.append(t)
 
             res.append((parent_port, param_val_to_t))
@@ -117,7 +117,7 @@ class MultiConfigUnitWrapper(Unit):
         return res
 
     def _injectParametersIntoPortTypes(self,
-                                       port_type_variants: List[Tuple[HdlPortItem, Dict[Tuple[Param, HValue], List[HdlType]]]],
+                                       port_type_variants: List[Tuple[HdlPortItem, Dict[Tuple[HwParam, HConst], List[HdlType]]]],
                                        param_signals: List[RtlSignal]):
         updated_type_ids = set()
         param_sig_by_name = {p.name: p for p in param_signals}
@@ -135,14 +135,14 @@ class MultiConfigUnitWrapper(Unit):
             type_to_param_values = {}
             for (param, param_value), port_types in param_val_to_t.items():
                 for pt in port_types:
-                    cond = type_to_param_values.setdefault(pt, UniqList())
+                    cond = type_to_param_values.setdefault(pt, SetList())
                     cond.append((param, param_value))
 
             assert type_to_param_values, parent_port
             if len(type_to_param_values) == 1:
                 continue  # type does not change
 
-            # Param: values
+            # HwParam: values
             params_used = {}
             for t, param_values in type_to_param_values.items():
                 for (param, param_val) in param_values:
@@ -203,7 +203,7 @@ class MultiConfigUnitWrapper(Unit):
                 default_width = None
                 for t, p_vals in sorted(type_to_param_values.items(), key=lambda x: x[0].bit_length()):
                     cond = And(
-                        *(param_sig_by_name[p.hdl_name]._eq(p_val)
+                        *(param_sig_by_name[p._hdl_name]._eq(p_val)
                         for p, p_val in p_vals if p in params_used)
                     )
                     w = t.bit_length()
@@ -227,8 +227,8 @@ class MultiConfigUnitWrapper(Unit):
 
         # constant signals which represents the param/generic values
         param_signals = [
-            ctx.sig(p.hdl_name, p.get_hdl_type(), def_val=p.get_hdl_value())
-            for p in sorted(self._params, key=lambda x: x.hdl_name)
+            ctx.sig(p._hdl_name, p.get_hdl_type(), def_val=p.get_hdl_value())
+            for p in sorted(self._hwParams, key=lambda x: x._hdl_name)
         ]
         # rewrite ports to use generic/params of this entity/module
         port_type_variants = self._collectPortTypeVariants()
@@ -240,13 +240,13 @@ class MultiConfigUnitWrapper(Unit):
         ns = store_manager.name_scope
         as_hdl_ast = self._store_manager.as_hdl_ast
         if_generate_cases = []
-        for u in self._units:
+        for subMod in self._subHwModules:
             # create instance
             ci = HdlCompInst()
-            ci.origin = u
-            ci.module_name = HdlValueId(u._ctx.ent.name, obj=u._ctx.ent)
-            ci.name = HdlValueId(ns.checked_name(u._name + "_inst", ci), obj=u)
-            e = u._ctx.ent
+            ci.origin = subMod
+            ci.module_name = HdlValueId(subMod._ctx.ent.name, obj=subMod._ctx.ent)
+            ci.name = HdlValueId(ns.checked_name(subMod._name + "_inst", ci), obj=subMod)
+            e = subMod._ctx.ent
 
             ci.param_map.extend(e.params)
             # connect ports
@@ -269,9 +269,9 @@ class MultiConfigUnitWrapper(Unit):
 
             # create if generate instantiation condition
             param_cmp_expr = BIT.from_py(1)
-            assert len(u._params) == len(param_signals)
-            for p, p_sig in zip(sorted(u._params, key=lambda x: x.hdl_name), param_signals):
-                assert p.hdl_name == p_sig.name, (p.hdl_name, p_sig.name)
+            assert len(subMod._hwParams) == len(param_signals)
+            for p, p_sig in zip(sorted(subMod._hwParams, key=lambda x: x._hdl_name), param_signals):
+                assert p._hdl_name == p_sig.name, (p._hdl_name, p_sig.name)
                 param_cmp_expr = param_cmp_expr & p_sig._eq(p.get_hdl_value())
 
             # add case if generate statement
@@ -308,7 +308,7 @@ class MultiConfigUnitWrapper(Unit):
     @internal
     def _to_rtl(self, target_platform:DummyPlatform,
         store_manager:"StoreManager", add_param_asserts=False):
-        return Unit._to_rtl(self, target_platform, store_manager, add_param_asserts=add_param_asserts)
+        return HwModule._to_rtl(self, target_platform, store_manager, add_param_asserts=add_param_asserts)
 
     def _impl(self):
         assert self._parent is None, "should be used only for top instances"
@@ -319,17 +319,17 @@ class MultiConfigUnitWrapper(Unit):
 
 if __name__ == "__main__":
     from hwtLib.examples.axi.simpleAxiRegs import SimpleAxiRegs
-    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.synth import to_rtl_str
 
     variants = []
     for aw in [8, 16, 32]:
-        u = SimpleAxiRegs()
-        u.ADDR_WIDTH = aw
-        u.DATA_WIDTH = 32
-        variants.append(u)
+        m = SimpleAxiRegs()
+        m.ADDR_WIDTH = aw
+        m.DATA_WIDTH = 32
+        variants.append(m)
 
-    u = MultiConfigUnitWrapper(variants)
-    synthesised(u)
-    #print(to_rtl_str(u))
-    #print(u._params)
+    m = MultiConfigHwModuleWrapper(variants)
+    # synthesised(m)
+    print(to_rtl_str(m))
+    #print(m._hwParams)
 

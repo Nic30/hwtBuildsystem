@@ -2,7 +2,7 @@ import sys
 import unittest
 
 from tests.cli_utils_test import CLIUtilsTC
-from tests.multiConfigUnitWrapper_test import MultiConfigUnitWrapperTC
+from tests.multiConfigHwModuleWrapper_test import MultiConfigHwModuleWrapperTC
 from tests.quartusSynthLogParser_test import QuartusSynthLogParserTC
 from tests.vivadoSynthLogParser_test import VivadoSynthLogParserTC
 from tests.yosysSynthLogParser_test import YosysSynthLogParserTC
@@ -12,7 +12,7 @@ ALL_TCs = [
     QuartusSynthLogParserTC,
     YosysSynthLogParserTC,
     CLIUtilsTC,
-    MultiConfigUnitWrapperTC,
+    MultiConfigHwModuleWrapperTC,
 ]
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, Clk, Rst, Rst_n
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIOSignal, HwIOClk, HwIORst, HwIORst_n
 from hwtBuildsystem.vivado.api.tcl import VivadoTCL
 from hwtBuildsystem.vivado.xdcGen import PortType
 from ipCorePackager.constants import INTF_DIRECTION
@@ -34,23 +34,23 @@ class VivadoBoardDesignPort():
             self.bd.insertPort(self)
 
     @classmethod
-    def fromInterface(cls, interface: Signal):
-        if isinstance(interface._dtype, Bits):
-            width = interface._dtype.bit_length()
-            if width == 1 and not interface._dtype.force_vector:
+    def fromInterface(cls, hwIO: HwIOSignal):
+        if isinstance(hwIO._dtype, HBits):
+            width = hwIO._dtype.bit_length()
+            if width == 1 and not hwIO._dtype.force_vector:
                 width = None
         else:
             width = None
-        if isinstance(interface, Clk):
+        if isinstance(hwIO, HwIOClk):
             typ = PortType.clk
-        elif isinstance(interface, (Rst, Rst_n)):
+        elif isinstance(hwIO, (HwIORst, HwIORst_n)):
             typ = PortType.rst
         else:
             typ = None
 
-        return cls(None, interface._getHdlName(),
-                    direction=INTF_DIRECTION.asDirection(interface._direction),
-                     typ=typ, hasSubIntf=bool(interface._interfaces),
+        return cls(None, hwIO._getHdlName(),
+                    direction=INTF_DIRECTION.asDirection(hwIO._direction),
+                     typ=typ, hasSubIntf=bool(hwIO._hwIOs),
                      width=width)
 
     def create(self):

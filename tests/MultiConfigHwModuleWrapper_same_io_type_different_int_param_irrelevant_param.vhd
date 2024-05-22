@@ -1,7 +1,7 @@
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
-ENTITY SimpleUnitWithParamWithIrrelevantParam_0 IS
+ENTITY SimpleHwModuleWithParamWithIrrelevantParam_0 IS
     GENERIC(
         DATA_WIDTH : INTEGER := 2;
         IRELEVANT_PARAM : INTEGER := 10
@@ -12,7 +12,7 @@ ENTITY SimpleUnitWithParamWithIrrelevantParam_0 IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF SimpleUnitWithParamWithIrrelevantParam_0 IS
+ARCHITECTURE rtl OF SimpleHwModuleWithParamWithIrrelevantParam_0 IS
 BEGIN
     b <= a;
     ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY failure;
@@ -21,7 +21,7 @@ END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
-ENTITY SimpleUnitWithParamWithIrrelevantParam_1 IS
+ENTITY SimpleHwModuleWithParamWithIrrelevantParam_1 IS
     GENERIC(
         DATA_WIDTH : INTEGER := 3;
         IRELEVANT_PARAM : INTEGER := 10
@@ -32,7 +32,7 @@ ENTITY SimpleUnitWithParamWithIrrelevantParam_1 IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF SimpleUnitWithParamWithIrrelevantParam_1 IS
+ARCHITECTURE rtl OF SimpleHwModuleWithParamWithIrrelevantParam_1 IS
 BEGIN
     b <= a;
     ASSERT DATA_WIDTH = 3 REPORT "Generated only for this value" SEVERITY failure;
@@ -41,7 +41,7 @@ END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
-ENTITY SimpleUnitWithParamWithIrrelevantParam IS
+ENTITY SimpleHwModuleWithParamWithIrrelevantParam IS
     GENERIC(
         DATA_WIDTH : INTEGER := 2;
         IRELEVANT_PARAM : INTEGER := 10
@@ -52,8 +52,8 @@ ENTITY SimpleUnitWithParamWithIrrelevantParam IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF SimpleUnitWithParamWithIrrelevantParam IS
-    COMPONENT SimpleUnitWithParamWithIrrelevantParam_0 IS
+ARCHITECTURE rtl OF SimpleHwModuleWithParamWithIrrelevantParam IS
+    COMPONENT SimpleHwModuleWithParamWithIrrelevantParam_0 IS
         GENERIC(
             DATA_WIDTH : INTEGER := 2;
             IRELEVANT_PARAM : INTEGER := 10
@@ -63,7 +63,7 @@ ARCHITECTURE rtl OF SimpleUnitWithParamWithIrrelevantParam IS
             b : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
         );
     END COMPONENT;
-    COMPONENT SimpleUnitWithParamWithIrrelevantParam_1 IS
+    COMPONENT SimpleHwModuleWithParamWithIrrelevantParam_1 IS
         GENERIC(
             DATA_WIDTH : INTEGER := 3;
             IRELEVANT_PARAM : INTEGER := 10
@@ -75,7 +75,7 @@ ARCHITECTURE rtl OF SimpleUnitWithParamWithIrrelevantParam IS
     END COMPONENT;
 BEGIN
     implementation_select: IF DATA_WIDTH = 2 AND IRELEVANT_PARAM = 10 GENERATE
-        possible_variants_0_inst: SimpleUnitWithParamWithIrrelevantParam_0 GENERIC MAP(
+        possible_variants_0_inst: SimpleHwModuleWithParamWithIrrelevantParam_0 GENERIC MAP(
             DATA_WIDTH => 2,
             IRELEVANT_PARAM => 10
         ) PORT MAP(
@@ -83,7 +83,7 @@ BEGIN
             b => b
         );
     ELSIF DATA_WIDTH = 3 AND IRELEVANT_PARAM = 10 GENERATE
-        possible_variants_1_inst: SimpleUnitWithParamWithIrrelevantParam_1 GENERIC MAP(
+        possible_variants_1_inst: SimpleHwModuleWithParamWithIrrelevantParam_1 GENERIC MAP(
             DATA_WIDTH => 3,
             IRELEVANT_PARAM => 10
         ) PORT MAP(

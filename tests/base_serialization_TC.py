@@ -5,9 +5,10 @@ from hwt.serializer.hwt import HwtSerializer
 from hwt.serializer.systemC import SystemCSerializer
 from hwt.serializer.verilog import VerilogSerializer
 from hwt.serializer.vhdl import Vhdl2008Serializer
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import to_rtl_str
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.hwModule import HwModule
+from hwt.synth import to_rtl_str
+
 
 rmWhitespaces = re.compile(r'\s+', re.MULTILINE)
 
@@ -36,9 +37,9 @@ class BaseSerializationTC(SimTestCase):
 
         self.assertEqual(_tmpl, _cont)
 
-    def assert_serializes_as_file(self, u: Unit, file_name: str):
+    def assert_serializes_as_file(self, m: HwModule, file_name: str):
         ser = self.SERIALIZER_BY_EXT[file_name.split(".")[-1]]
-        s = to_rtl_str(u, serializer_cls=ser)
+        s = to_rtl_str(m, serializer_cls=ser)
         self.assert_same_as_file(s, file_name)
 
     def assert_same_as_file(self, s, file_name: str):

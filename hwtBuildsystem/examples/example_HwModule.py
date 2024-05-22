@@ -1,30 +1,30 @@
 from hwt.code import If
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked, BramPort_withoutClk
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
+from hwt.hdl.types.bits import HBits
+from hwt.hwIOs.std import HwIODataRdVld, HwIOBramPort_noClk
+from hwt.hwIOs.utils import addClkRstn
+from hwt.hwParam import HwParam
+from hwt.hwModule import HwModule
 from hwtBuildsystem.ioConstraints import ConstrainIo
 from hwtBuildsystem.vivado.xdcGen import XdcIoStandard
 # from hwtBuildsystem.vivado.part import XilinxPart
 # from hwtBuildsystem.quartus.part import IntelPart
 
 
-class ExampleTop0(Unit):
+class ExampleTop0(HwModule):
     """
     Lorem Ipsum componet to have something to compile
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(2)
+        self.DATA_WIDTH = HwParam(2)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.a = Handshaked()
-            self.b = Handshaked()._m()
+        with self._hwParamsShared():
+            self.a = HwIODataRdVld()
+            self.b = HwIODataRdVld()._m()
 
-        r = self.ram_port = BramPort_withoutClk()
+        r = self.ram_port = HwIOBramPort_noClk()
         r.ADDR_WIDTH = 10
         r.DATA_WIDTH = 8
 
@@ -37,7 +37,7 @@ class ExampleTop0(Unit):
         a.rd(b.rd & ~vld)
 
         ram_port = self.ram_port
-        ram = self._sig("ram", Bits(8)[1024])
+        ram = self._sig("ram", HBits(8)[1024])
         If(self.clk._onRisingEdge(),
             If(ram_port.en,
                ram_port.dout(ram[ram_port.addr])
@@ -47,15 +47,15 @@ class ExampleTop0(Unit):
             ),
         )
 
-        def r(row, start, last):
-            a = []
-            for x in range(start, last + 1):
-                a.append(row + ("%d" % x))
-            return a
-
-        def p(intf, pinMap, ioStd=XdcIoStandard.LVCMOS18):
-            ConstrainIo(intf, pinMap, ioStd)
-
+        #def r(row, start, last):
+        #    a = []
+        #    for x in range(start, last + 1):
+        #        a.append(row + ("%d" % x))
+        #    return a
+        #
+        #def p(hwIO, pinMap, ioStd=XdcIoStandard.LVCMOS18):
+        #    ConstrainIo(hwIO, pinMap, ioStd)
+        #
         #if isinstance(self._target_platform, XilinxVivadoPlatform):
         #    assert self._target_platform.part == XilinxPart(
         #            XilinxPart.Family.kintex7,

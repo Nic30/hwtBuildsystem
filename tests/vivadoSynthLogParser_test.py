@@ -5,8 +5,8 @@ import json
 import os, unittest
 from unittest.case import TestCase
 
-from hwtBuildsystem.examples.example_units import ExampleTop0
-from hwtBuildsystem.examples.synthetizeUnit import buildUnit
+from hwtBuildsystem.examples.example_HwModule import ExampleTop0
+from hwtBuildsystem.examples.synthetizeHwModule import buildHwModule
 from hwtBuildsystem.fakeTool.replayingExecutor import ReplayingExecutor
 from hwtBuildsystem.vivado.logParser.synthesis import VivadoSynthesisLogParser
 from hwtBuildsystem.vivado.part import XilinxPart
@@ -56,7 +56,7 @@ class VivadoSynthLogParserTC(TestCase):
         self.assertDictEqual(d, {'lut': 3, 'ff': 1, 'latch': 0, 'bram': 0.5, 'uram': 0, 'dsp': 0})
 
     def test_parsingInProject(self):
-        u = ExampleTop0()
+        m = ExampleTop0()
         with ReplayingExecutor(ExampleTop0_synth_trace) as v:
             __pb = XilinxPart
             part = XilinxPart(
@@ -64,7 +64,7 @@ class VivadoSynthLogParserTC(TestCase):
                     __pb.Size._160t,
                     __pb.Package.ffg676,
                     __pb.Speedgrade._2)
-            r = buildUnit(v, u, "tmp/vivado", part,
+            r = buildHwModule(v, m, "tmp/vivado", part,
                           synthesize=True,
                           implement=False,
                           writeBitstream=False,

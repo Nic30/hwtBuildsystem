@@ -2,11 +2,11 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Simple parametrized unit.
+--    Simple parametrized module.
 --
 --    .. hwt-autodoc::
 --    
-ENTITY SimpleUnitWithParam_0 IS
+ENTITY SimpleHwModuleWithParam_0 IS
     GENERIC(
         DATA_WIDTH : INTEGER := 2
     );
@@ -16,7 +16,7 @@ ENTITY SimpleUnitWithParam_0 IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF SimpleUnitWithParam_0 IS
+ARCHITECTURE rtl OF SimpleHwModuleWithParam_0 IS
 BEGIN
     b <= a;
     ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY failure;
@@ -25,11 +25,11 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Simple parametrized unit.
+--    Simple parametrized module.
 --
 --    .. hwt-autodoc::
 --    
-ENTITY SimpleUnitWithParam_1 IS
+ENTITY SimpleHwModuleWithParam_1 IS
     GENERIC(
         DATA_WIDTH : INTEGER := 3
     );
@@ -39,7 +39,7 @@ ENTITY SimpleUnitWithParam_1 IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF SimpleUnitWithParam_1 IS
+ARCHITECTURE rtl OF SimpleHwModuleWithParam_1 IS
 BEGIN
     b <= a;
     ASSERT DATA_WIDTH = 3 REPORT "Generated only for this value" SEVERITY failure;
@@ -48,11 +48,34 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Simple parametrized unit.
+--    Simple parametrized module.
 --
 --    .. hwt-autodoc::
 --    
-ENTITY SimpleUnitWithParam IS
+ENTITY SimpleHwModuleWithParam_2 IS
+    GENERIC(
+        DATA_WIDTH : INTEGER := 4
+    );
+    PORT(
+        a : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+        b : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+    );
+END ENTITY;
+
+ARCHITECTURE rtl OF SimpleHwModuleWithParam_2 IS
+BEGIN
+    b <= a;
+    ASSERT DATA_WIDTH = 4 REPORT "Generated only for this value" SEVERITY failure;
+END ARCHITECTURE;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
+--
+--    Simple parametrized module.
+--
+--    .. hwt-autodoc::
+--    
+ENTITY SimpleHwModuleWithParam IS
     GENERIC(
         DATA_WIDTH : INTEGER := 2
     );
@@ -62,13 +85,13 @@ ENTITY SimpleUnitWithParam IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF SimpleUnitWithParam IS
+ARCHITECTURE rtl OF SimpleHwModuleWithParam IS
     --
-    --    Simple parametrized unit.
+    --    Simple parametrized module.
     --
     --    .. hwt-autodoc::
     --    
-    COMPONENT SimpleUnitWithParam_0 IS
+    COMPONENT SimpleHwModuleWithParam_0 IS
         GENERIC(
             DATA_WIDTH : INTEGER := 2
         );
@@ -78,11 +101,11 @@ ARCHITECTURE rtl OF SimpleUnitWithParam IS
         );
     END COMPONENT;
     --
-    --    Simple parametrized unit.
+    --    Simple parametrized module.
     --
     --    .. hwt-autodoc::
     --    
-    COMPONENT SimpleUnitWithParam_1 IS
+    COMPONENT SimpleHwModuleWithParam_1 IS
         GENERIC(
             DATA_WIDTH : INTEGER := 3
         );
@@ -91,17 +114,38 @@ ARCHITECTURE rtl OF SimpleUnitWithParam IS
             b : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
         );
     END COMPONENT;
+    --
+    --    Simple parametrized module.
+    --
+    --    .. hwt-autodoc::
+    --    
+    COMPONENT SimpleHwModuleWithParam_2 IS
+        GENERIC(
+            DATA_WIDTH : INTEGER := 4
+        );
+        PORT(
+            a : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+            b : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+        );
+    END COMPONENT;
 BEGIN
     implementation_select: IF DATA_WIDTH = 2 GENERATE
-        possible_variants_0_inst: SimpleUnitWithParam_0 GENERIC MAP(
+        possible_variants_0_inst: SimpleHwModuleWithParam_0 GENERIC MAP(
             DATA_WIDTH => 2
         ) PORT MAP(
             a => a,
             b => b
         );
     ELSIF DATA_WIDTH = 3 GENERATE
-        possible_variants_1_inst: SimpleUnitWithParam_1 GENERIC MAP(
+        possible_variants_1_inst: SimpleHwModuleWithParam_1 GENERIC MAP(
             DATA_WIDTH => 3
+        ) PORT MAP(
+            a => a,
+            b => b
+        );
+    ELSIF DATA_WIDTH = 4 GENERATE
+        possible_variants_2_inst: SimpleHwModuleWithParam_2 GENERIC MAP(
+            DATA_WIDTH => 4
         ) PORT MAP(
             a => a,
             b => b

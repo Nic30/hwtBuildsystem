@@ -13,11 +13,11 @@ import subprocess
 from hwt.serializer.store_manager import SaveToFilesFlat
 from hwt.serializer.verilog import VerilogSerializer
 from hwt.serializer.vhdl import Vhdl2008Serializer
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import to_rtl
+from hwt.hwModule import HwModule
+from hwt.synth import to_rtl
 from hwtBuildsystem.common.executor import ToolExecutor
 from hwtBuildsystem.common.project import SynthesisToolProject
-from hwtBuildsystem.examples.example_units import ExampleTop0
+from hwtBuildsystem.examples.example_HwModule import ExampleTop0
 from hwtBuildsystem.fakeTool.recordingExecutor import RecordingExecutor
 from hwtBuildsystem.quartus.api.project import QuartusProject
 from hwtBuildsystem.quartus.executor import QuartusExecutor
@@ -30,7 +30,7 @@ from hwtBuildsystem.yosys.part import LatticePart
 from hwt.synthesizer.dummyPlatform import DummyPlatform
 
 
-def buildUnit(exe: ToolExecutor, unit: Unit, root:str, part:tuple,
+def buildHwModule(exe: ToolExecutor, module: HwModule, root:str, part:tuple,
               targetPlatform=DummyPlatform(),
               synthesize:bool=True, implement:bool=True, writeBitstream:bool=True,
               openGui:bool=False) -> SynthesisToolProject:
@@ -42,7 +42,7 @@ def buildUnit(exe: ToolExecutor, unit: Unit, root:str, part:tuple,
     :param writeBitstream: if True the final bitstream will be generated
     :param openGui: if True the GUI of the tool will be opened on task end
     """
-    uName = unit._getDefaultName()
+    uName = module._getDefaultName()
     p = exe.project(root, uName)
     # generate project
     if p._exists():
@@ -59,9 +59,9 @@ def buildUnit(exe: ToolExecutor, unit: Unit, root:str, part:tuple,
         serializer = Vhdl2008Serializer
 
     store_manager = SaveToFilesFlat(serializer, root=os.path.join(p.path, 'src'))
-    to_rtl(unit, store_manager=store_manager, target_platform=targetPlatform)
+    to_rtl(module, store_manager=store_manager, target_platform=targetPlatform)
     p.addFiles(store_manager.files)
-    p.setTop(unit._name)
+    p.setTop(module._name)
 
     if synthesize:
         p.synthAll()
@@ -185,7 +185,7 @@ if __name__ == "__main__":
     def component_constructor():
         return ExampleTop0()
 
-    conn = sqlite3.connect('build_reports.db')
+    conn = sqlite3.connect('build_report.db')
     try:
         c = conn.cursor()
         logComunication = True
@@ -196,17 +196,17 @@ if __name__ == "__main__":
         #                       os.path.join(TEST_TRACES, "ExampleTop0_synth_trace.yosys_ice40.json")
         #                       ) as executor:
         # # with YosysExecutor(logComunication=logComunication) as executor:
-        #    u = component_constructor()
+        #    m = component_constructor()
         #    # part = IntelPart("Cyclone V", "5CGXFC7C7F23C8")
         #    # part = IntelPart("Arria 10", "10AX048H1F34E1HG")
         #    part = LatticePart('iCE40', 'up5k', 'sg48')
-        #    project = buildUnit(executor, u, "tmp/yosys", part,
+        #    project = buildHwModule(executor, m, "tmp/yosys", part,
         #                  synthesize=True,
         #                  implement=False,
         #                  writeBitstream=False,
         #                  # openGui=True,
         #                  )
-        #    name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
+        #    name = ".".join([m.__class__.__module__, m.__class__.__qualname__])
         #    store_yosys_report_in_db(c, start, project, name)
         #    conn.commit()
 
@@ -219,20 +219,20 @@ if __name__ == "__main__":
             removeAllTracedFilesFirst=True) as executor:
         # with ReplayingExecutor(os.path.join(os.path.dirname(__file__), "../../../tests/ExampleTop0_synth_trace.json")) as v:
         # with VivadoExecutor(logComunication=logComunication) as executor:
-            u = component_constructor()
+            m = component_constructor()
             __pb = XilinxPart
             part = XilinxPart(
                     __pb.Family.kintex7,
                     __pb.Size._160t,
                     __pb.Package.ffg676,
                     __pb.Speedgrade._2)
-            project = buildUnit(executor, u, "tmp/vivado", part,
+            project = buildHwModule(executor, m, "tmp/vivado", part,
                           synthesize=True,
                           implement=False,
                           writeBitstream=False,
                           # openGui=True,
                           )
-            name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
+            name = ".".join([m.__class__.__module__, m.__class__.__qualname__])
             store_vivado_report_in_db(c, start, project, name)
             conn.commit()
 
@@ -242,16 +242,16 @@ if __name__ == "__main__":
         #                       os.path.join(TEST_TRACES, "ExampleTop0_synth_trace.quartus_arria10.json"),
         #                       removeAllTracedFilesFirst=True) as executor:
         # #with QuartusExecutor(logComunication=logComunication) as executor:
-        #    u = component_constructor()
+        #    m = component_constructor()
         #    # part = IntelPart("Cyclone V", "5CGXFC7C7F23C8")
         #    part = IntelPart("Arria 10", "10AX048H1F34E1HG")
-        #    project = buildUnit(executor, u, "tmp/quartus", part,
+        #    project = buildHwModule(executor, m, "tmp/quartus", part,
         #                  synthesize=True,
         #                  implement=False,
         #                  writeBitstream=False,
         #                  # openGui=True,
         #                  )
-        #    name = ".".join([u.__class__.__module__, u.__class__.__qualname__])
+        #    name = ".".join([m.__class__.__module__, m.__class__.__qualname__])
         #    store_quartus_report_in_db(c, start, project, name)
         #    conn.commit()
         print("All done")

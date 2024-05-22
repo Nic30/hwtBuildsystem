@@ -13,7 +13,7 @@ class QuartusConfig():
         try:
             quartusHomes = os.listdir(cls._DEFAULT_HOME_LINUX)
         except Exception:
-            raise Exception("Can not find Quartus instalation automaticaly, set up QuartusConfig.HOME")
+            raise Exception("Can not find Quartus installation automatically, set up QuartusConfig.HOME")
 
         if len(quartusHomes) != 1:
             raise Exception('Can not resolve default Quartus available are %s' % (str(quartusHomes)))
