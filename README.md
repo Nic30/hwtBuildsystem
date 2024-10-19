@@ -31,6 +31,7 @@ Currently supports Xilinx Vivado, Modelsim, Intel Quartus, Yosys.
 * [python-quartus](https://github.com/CatherineH/python-quartus)
 * [quartustcl](https://github.com/agrif/quartustcl)
 * [pySerdes](https://github.com/jeepx5/pySerdes)
+* [xeda](https://github.com/XedaHQ/xeda)
 
 # Vendor tool tutorials
 
