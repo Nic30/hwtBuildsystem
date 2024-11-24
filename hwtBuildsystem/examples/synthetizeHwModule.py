@@ -9,12 +9,14 @@ from pathlib import Path
 import socket
 import sqlite3
 import subprocess
+from typing import Tuple
 
+from hwt.hwModule import HwModule
 from hwt.serializer.store_manager import SaveToFilesFlat
 from hwt.serializer.verilog import VerilogSerializer
 from hwt.serializer.vhdl import Vhdl2008Serializer
-from hwt.hwModule import HwModule
 from hwt.synth import to_rtl
+from hwt.synthesizer.dummyPlatform import DummyPlatform
 from hwtBuildsystem.common.executor import ToolExecutor
 from hwtBuildsystem.common.project import SynthesisToolProject
 from hwtBuildsystem.examples.example_HwModule import ExampleTop0
@@ -27,13 +29,12 @@ from hwtBuildsystem.vivado.executor import VivadoExecutor
 from hwtBuildsystem.vivado.part import XilinxPart
 from hwtBuildsystem.yosys.executor import YosysExecutor
 from hwtBuildsystem.yosys.part import LatticePart
-from hwt.synthesizer.dummyPlatform import DummyPlatform
 
 
 def buildHwModule(exe: ToolExecutor, module: HwModule, root:str, part:tuple,
               targetPlatform=DummyPlatform(),
               synthesize:bool=True, implement:bool=True, writeBitstream:bool=True,
-              openGui:bool=False) -> SynthesisToolProject:
+              openGui:bool=False) -> Tuple[SynthesisToolProject, datetime.datetime, datetime.datetime]:
     """
     Synthetize unit using bitstream synthesis tool like Xilinx Vivado or Intel Quartus
 
@@ -57,9 +58,10 @@ def buildHwModule(exe: ToolExecutor, module: HwModule, root:str, part:tuple,
         serializer = VerilogSerializer
     else:
         serializer = Vhdl2008Serializer
-
+    hwt_build_start = datetime.datetime.now()
     store_manager = SaveToFilesFlat(serializer, root=os.path.join(p.path, 'src'))
     to_rtl(module, store_manager=store_manager, target_platform=targetPlatform)
+    hwt_build_end = datetime.datetime.now()
     p.addFiles(store_manager.files)
     p.setTop(module._name)
 
@@ -75,7 +77,7 @@ def buildHwModule(exe: ToolExecutor, module: HwModule, root:str, part:tuple,
     if openGui:
         exe.openGui()
 
-    return p
+    return p, hwt_build_start, hwt_build_end
 
 
 SQL_COMMON_BULD_REPORT_COLUMNS = """
@@ -83,12 +85,14 @@ SQL_COMMON_BULD_REPORT_COLUMNS = """
     component_configuration TEXT NOT NULL,
     revision TEXT NOT NULL,
     build_start timestamp,
+    build_srcgen_start timestamp,
+    build_srcgen_end timestamp,
     build_end timestamp,
     tool_version TEXT NOT NULL,
     machine_name TEXT NOT NULL,
     part TEXT NOT NULL,
     md5_of_inputs TEXT NOT NULL"""
-SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS = "?, ?, ?, ?, ?, ?, ?, ?, ?"
+SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS = "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
 
 
 def calculateSrcChecksum(project: SynthesisToolProject):
@@ -106,6 +110,8 @@ def calculateSrcChecksum(project: SynthesisToolProject):
 def collect_common_build_report_values(component_name: str,
                                        component_configuration: dict,
                                        build_start:datetime.datetime,
+                                       build_srcgen_start:datetime.datetime,
+                                       build_srcgen_end:datetime.datetime,
                                        project: SynthesisToolProject):
     """
     :return: tuple of table values as defined in :var:`SQL_COMMON_BULD_REPORT_COLUMNS`
@@ -118,7 +124,8 @@ def collect_common_build_report_values(component_name: str,
     part = str(project.part)
     md5_of_inputs = calculateSrcChecksum(project)
 
-    return (component_name, conf, revision, build_start, now, tool_version, machine_name, part, md5_of_inputs)
+    return (component_name, conf, revision, build_start, build_srcgen_start, build_srcgen_end,
+            now, tool_version, machine_name, part, md5_of_inputs)
 
 
 def parse_reports(project: SynthesisToolProject):
@@ -130,14 +137,17 @@ def parse_reports(project: SynthesisToolProject):
     return resorces
 
 
-def store_yosys_report_in_db(db_cursor, build_start:datetime.datetime, project: VivadoProject, component_name: str):
+def store_yosys_report_in_db(db_cursor, build_start:datetime.datetime,
+                             build_srcgen_start:datetime.datetime,
+                             build_srcgen_end:datetime.datetime,
+                             project: VivadoProject, component_name: str):
     db_cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS yosys_builds
         ({SQL_COMMON_BULD_REPORT_COLUMNS:s},
          lut int, ff int, latch int, bram DECIMAL(10, 2), uram DECIMAL(10, 2), dsp int)''')
 
     r = parse_reports(project)
-    common = collect_common_build_report_values(component_name, {}, build_start, project)
+    common = collect_common_build_report_values(component_name, {}, build_start, build_srcgen_start, build_srcgen_end, project)
     db_cursor.execute(f'''
         INSERT INTO yosys_builds
             VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
@@ -145,14 +155,17 @@ def store_yosys_report_in_db(db_cursor, build_start:datetime.datetime, project: 
     )
 
 
-def store_vivado_report_in_db(db_cursor, build_start:datetime.datetime, project: VivadoProject, component_name: str):
+def store_vivado_report_in_db(db_cursor, build_start:datetime.datetime,
+                              build_srcgen_start:datetime.datetime,
+                              build_srcgen_end:datetime.datetime,
+                              project: VivadoProject, component_name: str):
     db_cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS xilinx_vivado_builds
         ({SQL_COMMON_BULD_REPORT_COLUMNS:s},
          lut int, ff int, latch int, bram DECIMAL(10, 2), uram DECIMAL(10, 2), dsp int)''')
 
     r = parse_reports(project)
-    common = collect_common_build_report_values(component_name, {}, build_start, project)
+    common = collect_common_build_report_values(component_name, {}, build_start, build_srcgen_start, build_srcgen_end, project)
     db_cursor.execute(f'''
         INSERT INTO xilinx_vivado_builds
             VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
@@ -160,12 +173,16 @@ def store_vivado_report_in_db(db_cursor, build_start:datetime.datetime, project:
     )
 
 
-def store_quartus_report_in_db(db_cursor, build_start:datetime.datetime, project: QuartusProject, component_name: str):
+def store_quartus_report_in_db(db_cursor, build_start:datetime.datetime,
+                               build_srcgen_start:datetime.datetime,
+                               build_srcgen_end:datetime.datetime,
+                               project: QuartusProject,
+                               component_name: str):
     db_cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS intel_quartus_builds
         ({SQL_COMMON_BULD_REPORT_COLUMNS:s},
          alm int, lut int, ff int, latch int, bram_bits DECIMAL(10, 2), dsp int)''')
-    common = collect_common_build_report_values(component_name, {}, build_start, project)
+    common = collect_common_build_report_values(component_name, {}, build_start, build_srcgen_start, build_srcgen_end, project)
     r = parse_reports(project)
     db_cursor.execute(f'''
         INSERT INTO intel_quartus_builds
@@ -200,14 +217,14 @@ if __name__ == "__main__":
         #    # part = IntelPart("Cyclone V", "5CGXFC7C7F23C8")
         #    # part = IntelPart("Arria 10", "10AX048H1F34E1HG")
         #    part = LatticePart('iCE40', 'up5k', 'sg48')
-        #    project = buildHwModule(executor, m, "tmp/yosys", part,
+        #    project, build_srcgen_start, build_srcgen_end = buildHwModule(executor, m, "tmp/yosys", part,
         #                  synthesize=True,
         #                  implement=False,
         #                  writeBitstream=False,
         #                  # openGui=True,
         #                  )
         #    name = ".".join([m.__class__.__module__, m.__class__.__qualname__])
-        #    store_yosys_report_in_db(c, start, project, name)
+        #    store_yosys_report_in_db(c, start, build_srcgen_start, build_srcgen_end, project, name)
         #    conn.commit()
 
         start = datetime.datetime.now()
@@ -226,14 +243,14 @@ if __name__ == "__main__":
                     __pb.Size._160t,
                     __pb.Package.ffg676,
                     __pb.Speedgrade._2)
-            project = buildHwModule(executor, m, "tmp/vivado", part,
+            project, build_srcgen_start, build_srcgen_end = buildHwModule(executor, m, "tmp/vivado", part,
                           synthesize=True,
                           implement=False,
                           writeBitstream=False,
                           # openGui=True,
                           )
             name = ".".join([m.__class__.__module__, m.__class__.__qualname__])
-            store_vivado_report_in_db(c, start, project, name)
+            store_vivado_report_in_db(c, start, build_srcgen_start, build_srcgen_end, project, name)
             conn.commit()
 
         # start = datetime.datetime.now()
@@ -245,14 +262,14 @@ if __name__ == "__main__":
         #    m = component_constructor()
         #    # part = IntelPart("Cyclone V", "5CGXFC7C7F23C8")
         #    part = IntelPart("Arria 10", "10AX048H1F34E1HG")
-        #    project = buildHwModule(executor, m, "tmp/quartus", part,
+        #    project, build_srcgen_start, build_srcgen_end = buildHwModule(executor, m, "tmp/quartus", part,
         #                  synthesize=True,
         #                  implement=False,
         #                  writeBitstream=False,
         #                  # openGui=True,
         #                  )
         #    name = ".".join([m.__class__.__module__, m.__class__.__qualname__])
-        #    store_quartus_report_in_db(c, start, project, name)
+        #    store_quartus_report_in_db(c, start, build_srcgen_start, build_srcgen_end, project, name)
         #    conn.commit()
         print("All done")
     finally:

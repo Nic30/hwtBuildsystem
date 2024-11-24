@@ -64,7 +64,7 @@ class VivadoSynthLogParserTC(TestCase):
                     __pb.Size._160t,
                     __pb.Package.ffg676,
                     __pb.Speedgrade._2)
-            r = buildHwModule(v, m, "tmp/vivado", part,
+            r, _, _ = buildHwModule(v, m, "tmp/vivado", part,
                           synthesize=True,
                           implement=False,
                           writeBitstream=False,
