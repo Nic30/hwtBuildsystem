@@ -35,7 +35,7 @@ BEGIN
     bus_aw_ready <= 'X';
     bus_b_resp <= "XX";
     bus_b_valid <= 'X';
-    bus_r_data <= "XXXXXXXXXXXXXXXX";
+    bus_r_data <= X"XXXX";
     bus_r_resp <= "XX";
     bus_r_valid <= 'X';
     bus_w_ready <= 'X';
@@ -79,7 +79,7 @@ BEGIN
     bus_aw_ready <= 'X';
     bus_b_resp <= "XX";
     bus_b_valid <= 'X';
-    bus_r_data <= "XXXXXXXXXXXXXXXX";
+    bus_r_data <= X"XXXX";
     bus_r_resp <= "XX";
     bus_r_valid <= 'X';
     bus_w_ready <= 'X';
@@ -123,7 +123,7 @@ BEGIN
     bus_aw_ready <= 'X';
     bus_b_resp <= "XX";
     bus_b_valid <= 'X';
-    bus_r_data <= "XXXXXXXXXXXXXXXX";
+    bus_r_data <= X"XXXX";
     bus_r_resp <= "XX";
     bus_r_valid <= 'X';
     bus_w_ready <= 'X';
