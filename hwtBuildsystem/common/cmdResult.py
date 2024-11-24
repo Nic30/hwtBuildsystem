@@ -12,9 +12,9 @@ class TclCmdResult():
     """
     Parsed result of comand over cli
     """
-    ANY_COLOR = '((\033\[0m)?(\033\[0;(\d+)m)?\s*)?'
-    OPT_MSG_NUMBER = '(\s*\(\d+\))?'
-    regex_invalidCmd = re.compile("(invalid command name \".*\")")
+    ANY_COLOR = r'((\033\[0m)?(\033\[0;(\d+)m)?\s*)?'
+    OPT_MSG_NUMBER = r'(\s*\(\d+\))?'
+    regex_invalidCmd = re.compile(r"(invalid command name \".*\")")
     regex_err = re.compile(f"{ANY_COLOR:s}ERROR{OPT_MSG_NUMBER:s}: (.*)")
     regex_critWarn = re.compile(f"{ANY_COLOR:s}CRITICAL WARNING{OPT_MSG_NUMBER:s}: (.*)")
     regex_warn = re.compile(f"{ANY_COLOR:s}WARNING{OPT_MSG_NUMBER:s}: (.*)")

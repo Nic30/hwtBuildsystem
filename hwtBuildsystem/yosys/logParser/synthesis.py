@@ -2,9 +2,9 @@ import re
 
 
 class YosysSynthesisLogParser():
-    RE_TABLE_HEADER_LINE = re.compile("^=== (.+) ===$")
-    RE_INDENT = re.compile("^( *)")
-    RE_CELLS = re.compile("^ *(.+) (\d+)$")
+    RE_TABLE_HEADER_LINE = re.compile(r"^=== (.+) ===$")
+    RE_INDENT = re.compile(r"^( *)")
+    RE_CELLS = re.compile(r"^ *(.+) (\d+)$")
 
     """
     :ivar text: text of the log from yosys synthesis run

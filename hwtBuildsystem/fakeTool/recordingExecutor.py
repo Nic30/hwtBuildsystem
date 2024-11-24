@@ -22,7 +22,7 @@ class RecordingExecutor(ToolExecutor):
     RE_VIVADO_PROJECT_ID = re.compile(r'(?<=<Option Name=\\"Id\\" Val=\\")[a-f0-9]{32}(?=\\"/>)')
 
     VAR_NAME_VIVADO_HELPER_PROC_PID = '{% RecordingExecutor.VIVADO_HELPER_PROC_PID %}'
-    RE_VIVADO_HELPER_PROC_PID = re.compile('(?<=\[Synth 8-7075\] Helper process launched with PID )(\d+)')
+    RE_VIVADO_HELPER_PROC_PID = re.compile(r'(?<=\[Synth 8-7075\] Helper process launched with PID )(\d+)')
 
     QUARTUS_INFO_TIMES = [
         (re.compile(r'(?<=Info: Peak virtual memory: )\d+(?= \S+)'),
