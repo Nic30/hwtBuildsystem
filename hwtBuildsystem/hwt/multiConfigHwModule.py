@@ -16,7 +16,6 @@ from hwt.hObjList import HObjList
 from hwt.hwParam import HwParam
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hwModule import HwModule
-from hwt.synth import synthesised
 from ipCorePackager.constants import INTF_DIRECTION, DIRECTION
 
 
@@ -66,7 +65,7 @@ class MultiConfigHwModuleWrapper(HwModule):
             v.name = p._name = ns.checked_name(p._name, p)
             v.type = hdl_val._dtype
             v.value = hdl_val
-            self._ctx.hwModDec.params.append(v)
+            self._rtlCtx.hwModDec.params.append(v)
 
         for hwIO in self.possible_variants[0]._hwIOs:
             # clone interface
@@ -80,11 +79,11 @@ class MultiConfigHwModuleWrapper(HwModule):
             self._registerHwIO(hwIO._name, myHwIO)
             object.__setattr__(self, hwIO._name, myHwIO)
 
-        ei = self._ctx.hwIOs
+        ei = self._rtlCtx.hwIOs
         for hwIO in self._hwIOs:
             self._loadHwIODeclarations(hwIO, True)
             assert hwIO._isExtern
-            hwIO._signalsForHwIO(self._ctx, ei,
+            hwIO._signalsForHwIO(self._rtlCtx, ei,
                                    self._store_manager.name_scope,
                                    reverse_dir=True)
 
@@ -100,7 +99,7 @@ class MultiConfigHwModuleWrapper(HwModule):
     def _collectPortTypeVariants(self) -> List[Tuple[HdlPortItem, Dict[Tuple[HwParam, HConst], List[HdlType]]]]:
         res = []
         param_variants = [hwParamsToValTuple(subMod) for subMod in self._subHwModules]
-        for parent_port, port_variants in zip(self._ctx.hwModDec.ports, zip(*(subMod._ctx.hwModDec.ports for subMod in self._subHwModules))):
+        for parent_port, port_variants in zip(self._rtlCtx.hwModDec.ports, zip(*(subMod._rtlCtx.hwModDec.ports for subMod in self._subHwModules))):
             param_val_to_t = {}
             for port_variant, params in zip(port_variants, param_variants):
                 assert port_variant.name == parent_port.name, (port_variant.name, parent_port.name)
@@ -219,7 +218,7 @@ class MultiConfigHwModuleWrapper(HwModule):
     def create_HdlModuleDef(self,
                             target_platform: DummyPlatform,
                             store_manager: "StoreManager"):
-        ctx = self._ctx
+        ctx = self._rtlCtx
         mdef = HdlModuleDef()
         mdef.dec = ctx.hwModDec
         mdef.module_name = HdlValueId(ctx.hwModDec.name, obj=ctx.hwModDec)
@@ -235,7 +234,7 @@ class MultiConfigHwModuleWrapper(HwModule):
         self._injectParametersIntoPortTypes(port_type_variants, param_signals)
         for p in param_signals:
             p._const = True
-            p.hidden = False
+            p._isUnnamedExpr = False
         # instantiate component variants in if generate statement
         ns = store_manager.name_scope
         as_hdl_ast = self._store_manager.as_hdl_ast
@@ -244,9 +243,9 @@ class MultiConfigHwModuleWrapper(HwModule):
             # create instance
             ci = HdlCompInst()
             ci.origin = subMod
-            ci.module_name = HdlValueId(subMod._ctx.hwModDec.name, obj=subMod._ctx.hwModDec)
+            ci.module_name = HdlValueId(subMod._rtlCtx.hwModDec.name, obj=subMod._rtlCtx.hwModDec)
             ci.name = HdlValueId(ns.checked_name(subMod._name + "_inst", ci), obj=subMod)
-            e = subMod._ctx.hwModDec
+            e = subMod._rtlCtx.hwModDec
 
             ci.param_map.extend(e.params)
             # connect ports
@@ -298,9 +297,9 @@ class MultiConfigHwModuleWrapper(HwModule):
         for p in ctx.hwModDec.ports:
             s = p.getInternSig()
             if p.direction != DIRECTION.IN:
-                s.drivers.append(if_generate)
+                s._rtlDrivers.append(if_generate)
             else:
-                s.endpoints.append(if_generate)
+                s._rtlEndpoints.append(if_generate)
 
         ctx.hwModDef = mdef
         return mdef
@@ -312,12 +311,13 @@ class MultiConfigHwModuleWrapper(HwModule):
 
     def hwImpl(self):
         assert self._parent is None, "should be used only for top instances"
-        self._ctx.create_HdlModuleDef = self.create_HdlModuleDef
+        self._rtlCtx.create_HdlModuleDef = self.create_HdlModuleDef
         self.possible_variants = HObjList(self._possible_variants)
         self._copyParamsAndInterfaces()
 
 
 if __name__ == "__main__":
+    # from hwt.synth import synthesised
     from hwtLib.examples.axi.simpleAxiRegs import SimpleAxiRegs
     from hwt.synth import to_rtl_str
 
