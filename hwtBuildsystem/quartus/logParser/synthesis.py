@@ -3,8 +3,8 @@ import re
 
 
 class QuartusSynthesisLogParser(VivadoSynthesisLogParser):
-    RE_TABLE_HEADER_LINE = re.compile("^\+(-+)\+$")
-    RE_TABLE_NAME_LINE = re.compile("^;\s*([^;]*?)\s*;$")
+    RE_TABLE_HEADER_LINE = re.compile(r"^\+(-+)\+$")
+    RE_TABLE_NAME_LINE = re.compile(r"^;\s*([^;]*?)\s*;$")
 
     def parse(self):
         table_top_seen = False
@@ -56,7 +56,7 @@ class QuartusSynthesisLogParser(VivadoSynthesisLogParser):
         i = self.indexByRowNameColumnName
         latches = self.tables.get("User-Specified and Inferred Latches", None)
         if latches:
-            m = re.match("Number of user-specified and inferred latches = (\d+)", latches[-1][0])
+            m = re.match(r"Number of user-specified and inferred latches = (\d+)", latches[-1][0])
             latches = int(m.group(1))
         else:
             latches = 0

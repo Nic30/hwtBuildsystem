@@ -6,9 +6,9 @@ import re
 
 
 class VivadoSynthesisLogParser():
-    RE_TABLE_HEADER = re.compile("^\d+(\.\d+)*\.?\s+(\S+[^\n]*)")
-    RE_TABLE_TOP_LINE = re.compile("^\+(-*\+)+")
-    RE_SECTION_NAME_UNDERLINE = re.compile("^-+")
+    RE_TABLE_HEADER = re.compile(r"^\d+(\.\d+)*\.?\s+(\S+[^\n]*)")
+    RE_TABLE_TOP_LINE = re.compile(r"^\+(-*\+)+")
+    RE_SECTION_NAME_UNDERLINE = re.compile(r"^-+")
 
     def __init__(self, text):
         self.lines = text.split("\n")
