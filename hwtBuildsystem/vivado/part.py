@@ -282,7 +282,7 @@ class XilinxPart():
         x980t = 'x980t'
 
     class Family():
-        atrix7 = '7a'
+        artix7 = '7a'
         kintex7 = '7k'
         virtex7 = '7v'
         zynq7000 = '7z'

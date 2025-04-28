@@ -13,7 +13,7 @@ class VivadoConfig():
         try:
             vivadoHomes = os.listdir(VivadoConfig._DEFAULT_HOME_LINUX)
         except Exception:
-            raise Exception("Can not find Vivado indtalation automaticaly, set up VivadoConfig.HOME")
+            raise Exception("Can not find Vivado installation automatically, set up VivadoConfig.HOME")
 
         if len(vivadoHomes) != 1:
             raise Exception('Can not resolve default Vivado available are %s' % (str(vivadoHomes)))
