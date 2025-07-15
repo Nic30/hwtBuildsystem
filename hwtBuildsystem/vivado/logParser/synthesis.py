@@ -10,7 +10,7 @@ class VivadoSynthesisLogParser():
     RE_TABLE_TOP_LINE = re.compile(r"^\+(-*\+)+")
     RE_SECTION_NAME_UNDERLINE = re.compile(r"^-+")
 
-    def __init__(self, text):
+    def __init__(self, text: str):
         self.lines = text.split("\n")
         self.tables = {}
 
@@ -76,18 +76,38 @@ class VivadoSynthesisLogParser():
         A small report function which extracts the most important values
         from the tables contained in a report.
         """
-        Slice_Logic = self.tables["Slice Logic"]
-        Memory = self.tables["Memory"]
-        DSP = self.tables["DSP"]
         i = self.indexByRowNameColumnName
+        try:
+            Slice_Logic = self.tables["Slice Logic"]
+            lut = int(i(Slice_Logic, "Slice LUTs*", "Used"))
+            isVersalAndAfter = False
+        except KeyError:
+            # versal and newer
+            Netlist_Logic = self.tables["Netlist Logic"]
+            lut = int(i(Netlist_Logic, "CLB LUTs*", "Used"))
+            isVersalAndAfter = True
+            Slice_Logic = Netlist_Logic
+
+        ff = int(i(Slice_Logic, "Register as Flip Flop", "Used"))
+        latch = int(i(Slice_Logic, "Register as Latch", "Used"))
+        if isVersalAndAfter:
+            BLOCKRAM = self.tables["BLOCKRAM"]
+            bram = float(i(BLOCKRAM, "Block RAM Tile", "Used"))
+            ARITHMETIC = self.tables["ARITHMETIC"]
+            dsp = int(i(ARITHMETIC, "DSP Slices", "Used"))
+        else:
+            Memory = self.tables["Memory"]
+            bram = float(i(Memory, "Block RAM Tile", "Used"))
+            DSP = self.tables["DSP"]
+            dsp = int(i(DSP, "DSPs", "Used"))
 
         return {
-            "lut": int(i(Slice_Logic, "Slice LUTs*", "Used")),
-            "ff": int(i(Slice_Logic, "Register as Flip Flop", "Used")),
-            "latch": int(i(Slice_Logic, "Register as Latch", "Used")),
-            'bram': float(i(Memory, "Block RAM Tile", "Used")),
+            "lut": lut,
+            "ff": ff,
+            "latch": latch,
+            'bram': bram,
             'uram': 0,
-            'dsp': int(i(DSP, "DSPs", "Used")),
+            'dsp': dsp,
         }
 
 

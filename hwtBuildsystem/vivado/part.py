@@ -146,7 +146,10 @@ class XilinxPart():
         sfva784 = 'sfva784'
         sfvb784 = 'sfvb784'
         sfvc784 = 'sfvc784'
-        vsva1365 = 'vsva1365'
+        vsva1365 = '-vsva1365'
+        vsva3697 = '-vsva3697'
+        lsva4737 = '-lsva4737'
+        
 
     class Size():
         _007s = '007s'
@@ -183,6 +186,9 @@ class XilinxPart():
         _12t = '12t'
         _13p = '13p'
         _15 = '15'
+        _1522 = "1522"
+        _1542 = "1542"
+        _1582 = "1582"
         _15eg = '15eg'
         _15p = '15p'
         _15t = '15t'
@@ -191,6 +197,8 @@ class XilinxPart():
         _160 = '160'
         _160t = '160t'
         _160tl = '160tl'
+        _1742 = "1742"
+        _1782 = "1782"
         _17eg = '17eg'
         _190 = '190'
         _19eg = '19eg'
@@ -293,28 +301,36 @@ class XilinxPart():
         rtKintexUltrascale = "rk"
         virtexuplus = "u2"
         # versal = 'vc'
-        # versal = 'vm'
+        versal = 'vm'
+        versalHbm = "vh"
 
     class Speedgrade():
         _1 = "-1"
         _1H = "-1H"
+        _1HP = "-1HP"
         _1HV = "-1HV"
         _1I = "-1I"
         _1IL = "-1IL"
         _1L = "-1L"
         _1LV = "-1LV"
+        _1LP = "-1LP-e-S"
         _1M = "-1M"
         _1ML = "-1ML"
         _1Q = "-1Q"
         _1QL = "-1QL"
         _2 = "-2"
         _2G = "-2G"
+        _2HP = "-2HP"
         _2I = "-2I"
         _2IL = "-2IL"
         _2L = "-2L"
+        _2LP = "-2LP"
         _2LV = "-2LV"
         _2LVI = "-2LVI"
         _3 = "-3"
+        _3HP = "-3HP-e-S"
+        _3LP = "-3LP"
+        
 
     class Grade():
         AUTOMOTIVE = "a"
