@@ -1,5 +1,5 @@
 from copy import copy
-from typing import List, Dict, Tuple, Union
+from typing import Union
 
 from hdlConvertorAst.hdlAst import HdlIdDef, HdlValueId, HdlStmIf, \
     HdlStmBlock, HdlModuleDef, HdlCompInst
@@ -19,7 +19,7 @@ from hwt.hwModule import HwModule
 from ipCorePackager.constants import INTF_DIRECTION, DIRECTION
 
 
-def reduce_ternary(cond_val_pairs: List[Tuple[Union[HConst, RtlSignal], Union[HConst, RtlSignal]]], default: Union[HConst, RtlSignal]):
+def reduce_ternary(cond_val_pairs: list[tuple[Union[HConst, RtlSignal], Union[HConst, RtlSignal]]], default: Union[HConst, RtlSignal]):
     """
     .. code-block:: python
 
@@ -44,7 +44,7 @@ class MultiConfigHwModuleWrapper(HwModule):
         component in to VHDL/Verilog
     """
 
-    def __init__(self, possible_variants: List[HwModule]):
+    def __init__(self, possible_variants: list[HwModule]):
         assert possible_variants
         self._possible_variants = possible_variants
         super(MultiConfigHwModuleWrapper, self).__init__()
@@ -96,7 +96,7 @@ class MultiConfigHwModuleWrapper(HwModule):
     def _checkCompInstances(self):
         pass
 
-    def _collectPortTypeVariants(self) -> List[Tuple[HdlPortItem, Dict[Tuple[HwParam, HConst], List[HdlType]]]]:
+    def _collectPortTypeVariants(self) -> list[tuple[HdlPortItem, dict[tuple[HwParam, HConst], list[HdlType]]]]:
         res = []
         param_variants = [hwParamsToValTuple(subMod) for subMod in self._subHwModules]
         for parent_port, port_variants in zip(self._rtlCtx.hwModDec.ports, zip(*(subMod._rtlCtx.hwModDec.ports for subMod in self._subHwModules))):
@@ -116,8 +116,8 @@ class MultiConfigHwModuleWrapper(HwModule):
         return res
 
     def _injectParametersIntoPortTypes(self,
-                                       port_type_variants: List[Tuple[HdlPortItem, Dict[Tuple[HwParam, HConst], List[HdlType]]]],
-                                       param_signals: List[RtlSignal]):
+                                       port_type_variants: list[tuple[HdlPortItem, dict[tuple[HwParam, HConst], list[HdlType]]]],
+                                       param_signals: list[RtlSignal]):
         updated_type_ids = set()
         param_sig_by_name = {p._name: p for p in param_signals}
         param_value_domain = {}
