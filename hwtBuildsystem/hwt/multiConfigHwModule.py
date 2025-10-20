@@ -76,7 +76,7 @@ class MultiConfigHwModuleWrapper(HwModule):
             # myHwIO._direction = hwIO._direction
             myHwIO._direction = INTF_DIRECTION.opposite(hwIO._direction)
 
-            self._registerHwIO(hwIO._name, myHwIO, myHwIO._onParentPropertyPath, False)
+            self._registerHwIO(hwIO._name, myHwIO, hwIO._onParentPropertyPath, False)
             object.__setattr__(self, hwIO._name, myHwIO)
 
         ei = self._rtlCtx.hwIOs
