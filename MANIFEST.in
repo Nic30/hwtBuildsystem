@@ -2,6 +2,4 @@ include README.md
 include MANIFEST.in
 
 # find ./ -name "*.json" | sort | sed 's|\./|include |g'
-include tests/ExampleTop0_synth_trace.quartus_arria10.json
-include tests/ExampleTop0_synth_trace.vivado_kintex7.json
-include tests/ExampleTop0_synth_trace.yosys_ice40.json
+

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hwtBuildsystem"
+version = "0.1"
+dependencies = [
+ 'pexpect', # CLI app io
+ 'hwt>=3.8', # core library of HWToolkit
+]
+requires-python = ">=3.8"
+authors = [
+  {name = "Michal Orsak", email = "Nic30original@gmail.com"},
+]
+
+description = "buildsystem for for HWT (the fpga devel. library)"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = [
+ 'hdl', 'vhdl', 'verilog', 'systemverilog', 'buildsystem', 'ip-core']
+classifiers = [
+  'Development Status :: 4 - Beta',
+  'Intended Audience :: Developers',
+  'Intended Audience :: Science/Research',
+  'Operating System :: OS Independent',
+  'Topic :: Software Development :: Build Tools',
+  'Programming Language :: Python :: 3',
+  'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)',
+]
+
+[project.optional-dependencies]
+test = [ # :note: to install this use pip install -e '.[test]'
+    "hwtLib>=2.9"
+]
+
+[project.urls]
+Homepage = "https://github.com/Nic30/hwtBuildsystem"
+Documentation = "https://hwtBuildsystem.readthedocs.io/en/latest/?badge=latest"
+Repository = "https://github.com/Nic30/hwtBuildsystem.git"
+"Bug Tracker" = "https://github.com/Nic30/hwtBuildsystem/issues"
