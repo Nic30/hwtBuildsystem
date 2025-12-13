@@ -153,7 +153,7 @@ def store_yosys_report_in_db(db_cursor, build_start:datetime.datetime,
             VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
         (*common, r['lut'], r['ff'], r['latch'], r['bram'], r['uram'], r['dsp']),
     )
-
+    return r
 
 def store_vivado_report_in_db(db_cursor, build_start:datetime.datetime,
                               build_srcgen_start:datetime.datetime,
@@ -171,6 +171,7 @@ def store_vivado_report_in_db(db_cursor, build_start:datetime.datetime,
             VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
         (*common, r['lut'], r['ff'], r['latch'], r['bram'], r['uram'], r['dsp']),
     )
+    return r
 
 
 def store_quartus_report_in_db(db_cursor, build_start:datetime.datetime,
@@ -189,6 +190,7 @@ def store_quartus_report_in_db(db_cursor, build_start:datetime.datetime,
             VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
         (*common, r['alm'], r['lut'], r['ff'], r['latch'], r['bram_bits'], r['dsp']),
     )
+    return r
 
 
 if __name__ == "__main__":
