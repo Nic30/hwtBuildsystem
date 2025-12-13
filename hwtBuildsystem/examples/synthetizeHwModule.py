@@ -128,13 +128,14 @@ def collect_common_build_report_values(component_name: str,
             now, tool_version, machine_name, part, md5_of_inputs)
 
 
-def parse_reports(project: SynthesisToolProject):
+def parse_reports(project: SynthesisToolProject, printReports=False):
     report = project.report()
     synth_report = report.parseUtilizationSynth()
-    resorces = synth_report.getBasicResourceReport()
-    print(resorces)
-    print("Bitstream is in file %s" % (report.bitstreamFile))
-    return resorces
+    resources = synth_report.getBasicResourceReport()
+    if printReports:
+        print(resources)
+        print("Bitstream is in file %s" % (report.bitstreamFile))
+    return resources
 
 
 def store_yosys_report_in_db(db_cursor, build_start:datetime.datetime,
