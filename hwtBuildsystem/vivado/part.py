@@ -304,7 +304,17 @@ class XilinxPart():
         versal = 'vm'
         versalHbm = "vh"
 
-    class Speedgrade():
+    class Speedgrade(): 
+        # higher number = faster
+        # * HP = High power
+        # * LP = Low power
+        # * HV = High Voltange
+        # * LV = Low voltange
+        # * I = Industrial
+        # * E = Extended temperature range 0°C to 100°C
+        # * Q = Expanded temperature range -40°C to 125°C
+        # * M = Military
+        # * G = Higher performance transceivers
         _1 = "-1"
         _1H = "-1H"
         _1HP = "-1HP"
