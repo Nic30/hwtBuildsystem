@@ -18,7 +18,7 @@ class VivadoBoardDesignNet():
             exe(VivadoTCL.connect_bd_net(src, dst))
 
     @classmethod
-    def createMultipleFromDict(cls, bd: 'VivadoBoardDesign', netDict):
+    def createMultipleFromDict(cls, bd: 'VivadoBoardDesign', netDict: dict):
         for src, dst in netDict.items():
             if isinstance(dst, list) or isinstance(dst, tuple):  # if has multiple dst create net for all of them
                 for d in dst:

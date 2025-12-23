@@ -4,7 +4,7 @@ from hwtBuildsystem.vivado.api.pin import VivadoBoardDesignPin
 
 class VivadoBoardDesignUnit():
 
-    def __init__(self, bd: 'VivadoBoardDesign', ipCore, name):
+    def __init__(self, bd: 'VivadoBoardDesign', ipCore: str, name: str):
         self.bd = bd
         self.ipCore = ipCore
         self.name = name

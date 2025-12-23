@@ -23,7 +23,7 @@ class YosysProject(SynthesisToolProject):
         ".sv": "-sv2012",
     }
 
-    def __init__(self, executor: "YosysProject", path:str, name:str):
+    def __init__(self, executor: "YosysExecutor", path:str, name:str):
         super(YosysProject, self).__init__(executor, path, name)
         self.name = name
         self._report = YosysReport(self.path, self.name, None)

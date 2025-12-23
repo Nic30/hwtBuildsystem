@@ -3,7 +3,7 @@ from hwtBuildsystem.vivado.api.tcl import VivadoTCL
 
 class VivadoBoardDesignPin():
 
-    def __init__(self, bd, name, hasSubIntf=False):
+    def __init__(self, bd: "VivadoBoardDesign", name: str, hasSubIntf=False):
         self.bd = bd
         self.name = name
         self.hasSubIntf = hasSubIntf
