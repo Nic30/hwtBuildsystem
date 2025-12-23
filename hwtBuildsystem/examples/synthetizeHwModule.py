@@ -80,7 +80,7 @@ def buildHwModule(exe: ToolExecutor, module: HwModule, root:str, part:tuple,
     return p, hwt_build_start, hwt_build_end
 
 
-SQL_COMMON_BULD_REPORT_COLUMNS = """
+SQL_COMMON_BUILD_REPORT_COLUMNS = """
     component_name TEXT NOT NULL,
     component_configuration TEXT NOT NULL,
     revision TEXT NOT NULL,
@@ -92,7 +92,7 @@ SQL_COMMON_BULD_REPORT_COLUMNS = """
     machine_name TEXT NOT NULL,
     part TEXT NOT NULL,
     md5_of_inputs TEXT NOT NULL"""
-SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS = "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+SQL_COMMON_BUILD_REPORT_COLUMNS_QUESTIONMARKS = "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
 
 
 def calculateSrcChecksum(project: SynthesisToolProject):
@@ -114,10 +114,10 @@ def collect_common_build_report_values(component_name: str,
                                        build_srcgen_end:datetime.datetime,
                                        project: SynthesisToolProject):
     """
-    :return: tuple of table values as defined in :var:`SQL_COMMON_BULD_REPORT_COLUMNS`
+    :return: tuple of table values as defined in :var:`SQL_COMMON_BUILD_REPORT_COLUMNS`
     """
     machine_name = socket.gethostname()
-    tool_version = "2020.2"
+    tool_version = project.executor.getVersion()
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode()
     now = datetime.datetime.now()
     conf = json.dumps(component_configuration)
@@ -138,57 +138,58 @@ def parse_reports(project: SynthesisToolProject, printReports=False):
     return resources
 
 
-def store_yosys_report_in_db(db_cursor, build_start:datetime.datetime,
+def store_yosys_report_in_db(db_cursor: sqlite3.Cursor, build_start:datetime.datetime,
                              build_srcgen_start:datetime.datetime,
                              build_srcgen_end:datetime.datetime,
                              project: VivadoProject, component_name: str):
     db_cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS yosys_builds
-        ({SQL_COMMON_BULD_REPORT_COLUMNS:s},
+        ({SQL_COMMON_BUILD_REPORT_COLUMNS:s},
          lut int, ff int, latch int, bram DECIMAL(10, 2), uram DECIMAL(10, 2), dsp int)''')
 
     r = parse_reports(project)
     common = collect_common_build_report_values(component_name, {}, build_start, build_srcgen_start, build_srcgen_end, project)
     db_cursor.execute(f'''
         INSERT INTO yosys_builds
-            VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
+            VALUES({SQL_COMMON_BUILD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
         (*common, r['lut'], r['ff'], r['latch'], r['bram'], r['uram'], r['dsp']),
     )
     return r
 
-def store_vivado_report_in_db(db_cursor, build_start:datetime.datetime,
+
+def store_vivado_report_in_db(db_cursor: sqlite3.Cursor, build_start:datetime.datetime,
                               build_srcgen_start:datetime.datetime,
                               build_srcgen_end:datetime.datetime,
                               project: VivadoProject, component_name: str):
     db_cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS xilinx_vivado_builds
-        ({SQL_COMMON_BULD_REPORT_COLUMNS:s},
+        ({SQL_COMMON_BUILD_REPORT_COLUMNS:s},
          lut int, ff int, latch int, bram DECIMAL(10, 2), uram DECIMAL(10, 2), dsp int)''')
 
     r = parse_reports(project)
     common = collect_common_build_report_values(component_name, {}, build_start, build_srcgen_start, build_srcgen_end, project)
     db_cursor.execute(f'''
         INSERT INTO xilinx_vivado_builds
-            VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
+            VALUES({SQL_COMMON_BUILD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
         (*common, r['lut'], r['ff'], r['latch'], r['bram'], r['uram'], r['dsp']),
     )
     return r
 
 
-def store_quartus_report_in_db(db_cursor, build_start:datetime.datetime,
+def store_quartus_report_in_db(db_cursor: sqlite3.Cursor, build_start:datetime.datetime,
                                build_srcgen_start:datetime.datetime,
                                build_srcgen_end:datetime.datetime,
                                project: QuartusProject,
                                component_name: str):
     db_cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS intel_quartus_builds
-        ({SQL_COMMON_BULD_REPORT_COLUMNS:s},
+        ({SQL_COMMON_BUILD_REPORT_COLUMNS:s},
          alm int, lut int, ff int, latch int, bram_bits DECIMAL(10, 2), dsp int)''')
     common = collect_common_build_report_values(component_name, {}, build_start, build_srcgen_start, build_srcgen_end, project)
     r = parse_reports(project)
     db_cursor.execute(f'''
         INSERT INTO intel_quartus_builds
-            VALUES({SQL_COMMON_BULD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
+            VALUES({SQL_COMMON_BUILD_REPORT_COLUMNS_QUESTIONMARKS:s}, ?, ?, ?, ?, ?, ?)''',
         (*common, r['alm'], r['lut'], r['ff'], r['latch'], r['bram_bits'], r['dsp']),
     )
     return r
