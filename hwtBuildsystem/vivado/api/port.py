@@ -53,6 +53,11 @@ class VivadoBoardDesignPort():
                      typ=typ, hasSubIntf=bool(hwIO._hwIOs),
                      width=width)
 
+    @classmethod
+    def makeBdPinsExternal(cls, pins: list["VivadoBoardDesignPin"]):
+        exe = self.bd.project.executor.exeCmd
+        exe(VivadoTCL.make_bd_pins_external(pins))
+
     def create(self):
         exe = self.bd.project.executor.exeCmd
 

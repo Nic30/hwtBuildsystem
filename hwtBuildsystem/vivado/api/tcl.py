@@ -69,6 +69,10 @@ class VivadoBDOpsTCL():
         return "create_bd_port %s %s" % (' '.join(params), name)
 
     @staticmethod
+    def make_bd_pins_external(names):
+        return 'make_bd_pins_external %s' % (' '.join(names))
+
+    @staticmethod
     def get_bd_intf_pins(names: List[str]):
         return 'get_bd_intf_pins %s' % (' '.join(names))
 
@@ -245,6 +249,10 @@ class VivadoTCL(CommonTcl, VivadoFSOpsTCL, VivadoBDOpsTCL, VivadoProjectOpsTCL, 
             raise Exception()
 
         return f"set_property {params:s} {obj:s}"
+
+    @staticmethod
+    def get_property(obj, name):
+        return f"get_property \"{name:s}\" {obj:s}"
 
     @staticmethod
     def source(scriptPath, noTrace=True):
