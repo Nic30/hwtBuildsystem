@@ -3,11 +3,11 @@ from typing import Optional, Union
 
 from hwtBuildsystem.common.project import SynthesisToolProject
 from hwtBuildsystem.vivado.api import Language, FILE_TYPE
-from hwtBuildsystem.vivado.report import VivadoReport
-from hwtBuildsystem.vivado.api.tcl import VivadoTCL
-import xml.etree.ElementTree as ET
 from hwtBuildsystem.vivado.api.boardDesign import VivadoBoardDesign
+from hwtBuildsystem.vivado.api.tcl import VivadoTCL
 from hwtBuildsystem.vivado.part import XilinxPart
+from hwtBuildsystem.vivado.report import VivadoReport
+import xml.etree.ElementTree as ET
 
 
 class VivadoProject(SynthesisToolProject):
@@ -119,6 +119,10 @@ class VivadoProject(SynthesisToolProject):
         exe = self.executor.exeCmd
         exe(VivadoTCL.set_property(self.get(), "part", partName))
 
+    def getIpRepoPaths(self):
+        exe = self.executor.exeCmd
+        exe(VivadoTCL.get_property(self.get(), "ip_repo_paths"))
+
     def setIpRepoPaths(self, paths):
         exe = self.executor.exeCmd
         exe(VivadoTCL.set_property(self.get(), name='ip_repo_paths', valList=paths))
@@ -182,4 +186,3 @@ class VivadoProject(SynthesisToolProject):
         assert(lang == Language.verilog or lang == Language.vhdl)
         exe = self.executor.exeCmd
         exe(VivadoTCL.set_property(self.get(), "target_language", lang))
-
