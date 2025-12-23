@@ -138,6 +138,19 @@ def parse_reports(project: SynthesisToolProject, printReports=False):
     return resources
 
 
+def is_report_build(db_cursor: sqlite3.Cursor, table_name:str, name: str):
+    try:
+        for (isBuild,) in db_cursor.execute(f'SELECT EXISTS(SELECT 1 FROM {table_name:s} WHERE component_name="{name:s}");'):
+            if isBuild:
+                return True
+        return False
+    except sqlite3.OperationalError as e:
+        if "no such table" in e.args[0]:
+            return False
+        else:
+            raise e
+
+
 def store_yosys_report_in_db(db_cursor: sqlite3.Cursor, build_start:datetime.datetime,
                              build_srcgen_start:datetime.datetime,
                              build_srcgen_end:datetime.datetime,
@@ -155,6 +168,10 @@ def store_yosys_report_in_db(db_cursor: sqlite3.Cursor, build_start:datetime.dat
         (*common, r['lut'], r['ff'], r['latch'], r['bram'], r['uram'], r['dsp']),
     )
     return r
+
+
+def is_yosys_report_build(db_cursor: sqlite3.Cursor, name: str):
+    return is_report_build(db_cursor, "yosys_builds", name)
 
 
 def store_vivado_report_in_db(db_cursor: sqlite3.Cursor, build_start:datetime.datetime,
@@ -176,6 +193,10 @@ def store_vivado_report_in_db(db_cursor: sqlite3.Cursor, build_start:datetime.da
     return r
 
 
+def is_vivado_report_build(db_cursor: sqlite3.Cursor, name: str):
+    return is_report_build(db_cursor, "xilinx_vivado_builds", name)
+
+
 def store_quartus_report_in_db(db_cursor: sqlite3.Cursor, build_start:datetime.datetime,
                                build_srcgen_start:datetime.datetime,
                                build_srcgen_end:datetime.datetime,
@@ -193,6 +214,10 @@ def store_quartus_report_in_db(db_cursor: sqlite3.Cursor, build_start:datetime.d
         (*common, r['alm'], r['lut'], r['ff'], r['latch'], r['bram_bits'], r['dsp']),
     )
     return r
+
+
+def is_quartus_report_build(db_cursor: sqlite3.Cursor, name: str):
+    return is_report_build(db_cursor, "intel_quartus_builds", name)
 
 
 if __name__ == "__main__":
