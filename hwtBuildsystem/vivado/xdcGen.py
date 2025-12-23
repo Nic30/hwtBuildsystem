@@ -47,6 +47,7 @@ class XdcIoStandard(SimpleXDCProp):
     LVCMOS15 = "LVCMOS15"
     LVCMOS18 = "LVCMOS18"
     LVCMOS25 = 'LVCMOS25'
+    LVCMOS33 = 'LVCMOS33'
     HSTL_I_DCI = "HSTL_I_DCI"
     DIFF_HSTL_I = "DIFF_HSTL_I"
     HSTL_I = "HSTL_I"
