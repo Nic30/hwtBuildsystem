@@ -77,11 +77,18 @@ class VivadoSynthesisLogParser():
         from the tables contained in a report.
         """
         i = self.indexByRowNameColumnName
-        try:
+        isUSp = False
+        isVersalAndAfter = False
+        if "Slice Logic" in self.tables:
             Slice_Logic = self.tables["Slice Logic"]
             lut = int(i(Slice_Logic, "Slice LUTs*", "Used"))
-            isVersalAndAfter = False
-        except KeyError:
+        elif "CLB Logic" in self.tables:
+            # ultrascaleplus
+            Netlist_Logic = self.tables["CLB Logic" ]
+            lut = int(i(Netlist_Logic, "CLB LUTs*", "Used"))
+            isUSp = True
+            Slice_Logic = Netlist_Logic
+        elif "Netlist Logic" in self.tables:
             # versal and newer
             Netlist_Logic = self.tables["Netlist Logic"]
             lut = int(i(Netlist_Logic, "CLB LUTs*", "Used"))
@@ -90,14 +97,20 @@ class VivadoSynthesisLogParser():
 
         ff = int(i(Slice_Logic, "Register as Flip Flop", "Used"))
         latch = int(i(Slice_Logic, "Register as Latch", "Used"))
-        if isVersalAndAfter:
+        if isVersalAndAfter or isUSp:
             BLOCKRAM = self.tables["BLOCKRAM"]
             bram = float(i(BLOCKRAM, "Block RAM Tile", "Used"))
-            ARITHMETIC = self.tables["ARITHMETIC"]
-            dsp = int(i(ARITHMETIC, "DSP Slices", "Used"))
         else:
             Memory = self.tables["Memory"]
             bram = float(i(Memory, "Block RAM Tile", "Used"))
+
+        if isVersalAndAfter:
+            ARITHMETIC = self.tables["ARITHMETIC"]
+            dsp = int(i(ARITHMETIC, "DSP Slices", "Used"))
+        elif isUSp:
+            ARITHMETIC = self.tables["ARITHMETIC"]
+            dsp = int(i(ARITHMETIC, "DSPs", "Used"))
+        else:
             DSP = self.tables["DSP"]
             dsp = int(i(DSP, "DSPs", "Used"))
 
@@ -119,3 +132,4 @@ if __name__ == "__main__":
             print(table_name)
             for x in table:
                 print(x)
+        print(rp.getBasicResourceReport())
