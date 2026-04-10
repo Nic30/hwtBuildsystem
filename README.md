@@ -32,7 +32,15 @@ Currently supports Xilinx Vivado, Modelsim, Intel Quartus, Yosys.
 * [quartustcl](https://github.com/agrif/quartustcl)
 * [pySerdes](https://github.com/jeepx5/pySerdes)
 * [xeda](https://github.com/XedaHQ/xeda)
-* [VivadoScripting](https://github.com/paulscherrerinstitute/VivadoScripting)
+* [paulscherrerinstitute/VivadoScripting](https://github.com/paulscherrerinstitute/VivadoScripting)
+* [jesselooney/vivado-report-parser](https://github.com/jesselooney/vivado-report-parser)
+* [Xilinx/SLASH](https://github.com/Xilinx/SLASH) hls kernel assembler for Alveo V80 
+
+# Board support package libraries
+
+* [litex-boards](https://github.com/litex-hub/litex-boards)
+* [examples in alexforencich/verilog-ethernet](https://github.com/alexforencich/verilog-ethernet/tree/master/example)
+
 
 # Vendor tool tutorials
 
