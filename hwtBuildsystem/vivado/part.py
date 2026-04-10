@@ -149,7 +149,6 @@ class XilinxPart():
         vsva1365 = '-vsva1365'
         vsva3697 = '-vsva3697'
         lsva4737 = '-lsva4737'
-        
 
     class Size():
         _007s = '007s'
@@ -304,7 +303,7 @@ class XilinxPart():
         versal = 'vm'
         versalHbm = "vh"
 
-    class Speedgrade(): 
+    class Speedgrade():
         # higher number = faster
         # * HP = High power
         # * LP = Low power
@@ -329,6 +328,7 @@ class XilinxPart():
         _1Q = "-1Q"
         _1QL = "-1QL"
         _2 = "-2"
+        _2_i = "-2-i"
         _2G = "-2G"
         _2HP = "-2HP"
         _2I = "-2I"
@@ -340,7 +340,6 @@ class XilinxPart():
         _3 = "-3"
         _3HP = "-3HP-e-S"
         _3LP = "-3LP"
-        
 
     class Grade():
         AUTOMOTIVE = "a"
@@ -370,7 +369,11 @@ class XilinxPart():
         return hash(self.as_tuple())
 
     def name(self):
-        return "x" + self.grade + self.family + self.size + self.package + self.speedgrade
+        F = self.Family
+        if self.family in (F.artix7, F.kintex7, F.virtex7, F.zynq7000, F.spartan7):
+            return ''.join(["x", self.grade, self.family, self.size, self.package, self.speedgrade])
+        else:
+            return ''.join(["x", self.grade, self.family, self.size, "-", self.package, self.speedgrade])
 
     def __repr__(self):
         return f"<{self.__class__.__name__:s} {self.grade:s} {self.family:s} {self.size:s} {self.package} {self.speedgrade:s}>"
