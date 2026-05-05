@@ -1,8 +1,7 @@
 //
-//    Simple parametrized module.
+//Simple parametrized module.
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module SimpleHwModuleWithHwParam_0 #(
     parameter DATA_WIDTH = 2
 ) (
@@ -16,10 +15,9 @@ module SimpleHwModuleWithHwParam_0 #(
 
 endmodule
 //
-//    Simple parametrized module.
+//Simple parametrized module.
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module SimpleHwModuleWithHwParam_1 #(
     parameter DATA_WIDTH = 3
 ) (
@@ -33,10 +31,9 @@ module SimpleHwModuleWithHwParam_1 #(
 
 endmodule
 //
-//    Simple parametrized module.
+//Simple parametrized module.
 //
-//    .. hwt-autodoc::
-//    
+//.. hwt-autodoc::
 module SimpleHwModuleWithHwParam #(
     parameter DATA_WIDTH = 2
 ) (

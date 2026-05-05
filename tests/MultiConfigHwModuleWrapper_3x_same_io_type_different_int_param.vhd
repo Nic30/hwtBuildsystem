@@ -2,10 +2,9 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Simple parametrized module.
+--Simple parametrized module.
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY SimpleHwModuleWithHwParam_0 IS
     GENERIC(
         DATA_WIDTH : INTEGER := 2
@@ -25,10 +24,9 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Simple parametrized module.
+--Simple parametrized module.
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY SimpleHwModuleWithHwParam_1 IS
     GENERIC(
         DATA_WIDTH : INTEGER := 3
@@ -48,10 +46,9 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Simple parametrized module.
+--Simple parametrized module.
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY SimpleHwModuleWithHwParam_2 IS
     GENERIC(
         DATA_WIDTH : INTEGER := 4
@@ -71,10 +68,9 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    Simple parametrized module.
+--Simple parametrized module.
 --
---    .. hwt-autodoc::
---    
+--.. hwt-autodoc::
 ENTITY SimpleHwModuleWithHwParam IS
     GENERIC(
         DATA_WIDTH : INTEGER := 2
@@ -87,10 +83,9 @@ END ENTITY;
 
 ARCHITECTURE rtl OF SimpleHwModuleWithHwParam IS
     --
-    --    Simple parametrized module.
+    --Simple parametrized module.
     --
-    --    .. hwt-autodoc::
-    --    
+    --.. hwt-autodoc::
     COMPONENT SimpleHwModuleWithHwParam_0 IS
         GENERIC(
             DATA_WIDTH : INTEGER := 2
@@ -101,10 +96,9 @@ ARCHITECTURE rtl OF SimpleHwModuleWithHwParam IS
         );
     END COMPONENT;
     --
-    --    Simple parametrized module.
+    --Simple parametrized module.
     --
-    --    .. hwt-autodoc::
-    --    
+    --.. hwt-autodoc::
     COMPONENT SimpleHwModuleWithHwParam_1 IS
         GENERIC(
             DATA_WIDTH : INTEGER := 3
@@ -115,10 +109,9 @@ ARCHITECTURE rtl OF SimpleHwModuleWithHwParam IS
         );
     END COMPONENT;
     --
-    --    Simple parametrized module.
+    --Simple parametrized module.
     --
-    --    .. hwt-autodoc::
-    --    
+    --.. hwt-autodoc::
     COMPONENT SimpleHwModuleWithHwParam_2 IS
         GENERIC(
             DATA_WIDTH : INTEGER := 4
