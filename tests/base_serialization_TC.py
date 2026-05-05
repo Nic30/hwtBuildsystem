@@ -35,7 +35,7 @@ class BaseSerializationTC(SimTestCase):
         _tmpl = rmWhitespaces.sub(" ", tmpl).strip()
         _cont = rmWhitespaces.sub(" ", cont).strip()
 
-        self.assertEqual(_tmpl, _cont)
+        self.assertMultiLineEqual(_tmpl, _cont)
 
     def assert_serializes_as_file(self, m: HwModule, file_name: str):
         ser = self.SERIALIZER_BY_EXT[file_name.split(".")[-1]]
