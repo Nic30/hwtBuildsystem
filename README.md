@@ -35,6 +35,8 @@ Currently supports Xilinx Vivado, Modelsim, Intel Quartus, Yosys.
 * [paulscherrerinstitute/VivadoScripting](https://github.com/paulscherrerinstitute/VivadoScripting)
 * [jesselooney/vivado-report-parser](https://github.com/jesselooney/vivado-report-parser)
 * [Xilinx/SLASH](https://github.com/Xilinx/SLASH) hls kernel assembler for Alveo V80 
+* [Hog](https://hog.readthedocs.io/en/latest/)
+* [fwk](https://pkg.go.dev/go-hep.org/x/hep/fwk)
 
 # Board support package libraries
 
