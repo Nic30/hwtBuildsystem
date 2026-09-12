@@ -43,6 +43,9 @@ Currently supports Xilinx Vivado, Modelsim, Intel Quartus, Yosys.
 * [litex-boards](https://github.com/litex-hub/litex-boards)
 * [examples in alexforencich/verilog-ethernet](https://github.com/alexforencich/verilog-ethernet/tree/master/example)
 
+# Board lists
+
+* [fpgadeveloper/board-repo](https://github.com/fpgadeveloper/board-repo)
 
 # Vendor tool tutorials
 
